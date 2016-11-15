@@ -178,7 +178,7 @@
     function getStreamStartedAt(channelName) {
         if ($.twitchCacheReady.equals('true') && channelName.equals($.channelName)) {
             if ($.twitchcache.getStreamOnlineString === 'false') {
-                return 'Stream is offline';
+                return 'Stream is offline.';
             }
             createdAtDate = new Date($.twitchcache.getStreamCreatedAt() + '');
             return $.dateToString(createdAtDate);
@@ -187,7 +187,7 @@
                 createdAtDate;
 
             if (stream.isNull('stream')) {
-                return 'Stream is offline';
+                return 'Stream is offline.';
             }
     
             createdAtDate = new Date(stream.getJSONObject('stream').getString('created_at'));
@@ -245,7 +245,7 @@
         if (followedAt) {
             return $.getLongTimeString(now);
         } else {
-            return sender + ' is not following';
+            return sender + ' is not following you.';
         }
     }
 
@@ -283,7 +283,7 @@
                 if (!silent) {
                     $.say('Changed the game to "' + http.getString('game') + '"!');
                 }
-                $.log.event($.username.resolve(sender) + ' changed the current game to ' + http.getString('game'));
+                $.log.event($.username.resolve(sender) + ' changed the current game to ' + http.getString('game') + '.');
 
                 if ($.bot.isModuleEnabled('./commands/deathctrCommand.js')) {
                     $.deathUpdateFile(game);

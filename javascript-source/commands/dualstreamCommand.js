@@ -79,7 +79,7 @@
                 $.inidb.del('dualStreamCommand', 'otherChannels');
                 $.inidb.set('dualStreamCommand', 'timerToggle', timerToggle);
                 $.say($.whisperPrefix(sender) + $.lang.get('dualstreamcommand.clear'));
-                $.log.event(sender + ' cleared the multi link');
+                $.log.event(sender + ' cleared the multi link.');
                 return;
             }
 
@@ -96,13 +96,13 @@
                     timerToggle = true;
                     $.inidb.set('dualStreamCommand', 'timerToggle', timerToggle);
                     $.say($.whisperPrefix(sender) + $.lang.get('dualstreamcommand.timer.enabled'));
-                    $.log.event(sender + ' enabled the multi timer');
+                    $.log.event(sender + ' enabled the multi timer.');
                     return;
                 } else if (subAction.equalsIgnoreCase('off')) {
                     timerToggle = false;
                     $.inidb.set('dualStreamCommand', 'timerToggle', timerToggle);
                     $.say($.whisperPrefix(sender) + $.lang.get('dualstreamcommand.timer.disabled'));
-                    $.log.event(sender + ' disabled the multi timer');
+                    $.log.event(sender + ' disabled the multi timer.');
                     return;
                 } else {
                     $.say($.whisperPrefix(sender) + $.lang.get('dualstreamcommand.timer.usage'));
@@ -124,7 +124,7 @@
                 timerInterval = parseInt(subAction);
                 $.inidb.set('dualStreamCommand', 'timerInterval', timerInterval);
                 $.say($.whisperPrefix(sender) + $.lang.get('dualstreamcommand.timerinterval.set', timerInterval));
-                $.log.event(sender + ' changed the multi timer interval to ' + timerInterval + ' seconds');
+                $.log.event(sender + ' changed the multi timer interval to ' + timerInterval + ' seconds.');
 
                 setInterval(function() {
                     if (timerToggle && otherChannels != 'Channel-1 Channel-2') {
@@ -149,7 +149,7 @@
                 reqMessages = parseInt(subAction);
                 $.inidb.set('dualStreamCommand', 'reqMessages', reqMessages);
                 $.say($.whisperPrefix(sender) + $.lang.get('dualstreamcommand.reqmessages.set', reqMessages));
-                $.log.event(sender + ' changed the multi req messages to ' + reqMessages + ' messages');
+                $.log.event(sender + ' changed the multi req messages to ' + reqMessages + ' messages.');
             }
         }
 

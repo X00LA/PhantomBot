@@ -56,7 +56,7 @@
             try {
                 org.apache.commons.io.FileUtils.moveFileToDirectory(fileO, pathO, true);
             } catch (ex) {
-                $.logError("fileSystem.js", 57, "moveFile(" + file + ", " + path + ") failed: " + ex);
+                $.logError("fileSystem.js", 57, "move File(" + file + ", " + path + ") failed: " + ex);
             }
         }
     };

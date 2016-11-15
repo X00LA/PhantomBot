@@ -26,8 +26,8 @@
             return;
         }
 
-        $.consoleLn(">> Enabling hosts announcements");
-        $.log.event('Host announcements enabled');
+        $.consoleLn(">> Enabling hosts announcements...");
+        $.log.event('Host announcements enabled.');
         announceHosts = true;
     });
 
@@ -114,7 +114,7 @@
             $.inidb.set('settings', 'hostReward', commandArg);
             hostReward = parseInt(commandArg);
             $.say($.whisperPrefix(sender) + $.lang.get('hosthandler.set.hostreward.success', $.getPointsString(commandArg)));
-            $.log.event(sender + ' changed the host reward to ' + commandArg);
+            $.log.event(sender + ' changed the host reward to ' + commandArg + '.');
         }
 
         /**
@@ -129,7 +129,7 @@
             hostMessage = event.getArguments();
             $.inidb.set('settings', 'hostMessage', hostMessage);
             $.say($.whisperPrefix(sender) + $.lang.get('hosthandler.set.hostmessage.success'));
-            $.log.event(sender + ' changed the host message to ' + hostMessage);
+            $.log.event(sender + ' changed the host message to ' + hostMessage + '.');
         }
 
         /**

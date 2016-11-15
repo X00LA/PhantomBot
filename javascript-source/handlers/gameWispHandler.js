@@ -194,15 +194,15 @@ $.consoleDebug('checkGameWispSub(' + username + '): status is undefined');
         }
         
         if (jsonData['data'][0]['status'].equals('inactive')) {
-$.consoleDebug('checkGameWispSub(' + username + '): inactive account');
+$.consoleDebug('checkGameWispSub(' + username + '): Inactive Account');
             $.delGWSubUsersList(username);
             $.restoreSubscriberStatus(username, false);
         } else {
-$.consoleDebug('checkGameWispSub(' + username + '): adding to sub users list');
+$.consoleDebug('checkGameWispSub(' + username + '): Adding to sub users list.');
             $.addGWSubUsersList(username, parseInt(jsonData['data'][0]['tier']['data']['level']));
-$.consoleDebug('checkGameWispSub(' + username + '): calling DB update; mods are ignored');
+$.consoleDebug('checkGameWispSub(' + username + '): Calling DB update; Mods are ignored!');
             $.restoreSubscriberStatus(username, false);
-$.consoleDebug('checkGameWispSub(' + username + '): handler complete');
+$.consoleDebug('checkGameWispSub(' + username + '): Handler complete!');
         }
     }
 

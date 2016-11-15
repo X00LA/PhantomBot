@@ -37,8 +37,8 @@
             $.mkDir(donationAddonDir);
         }
 
-        $.consoleLn(">> Enabling Twitch Alerts donation announcements");
-        $.log.event('Donation announcements enabled');
+        $.consoleLn(">> Enabling Twitch Alerts donation announcements.");
+        $.log.event('Donation announcements enabled.');
         announceDonations = true;
     });
 
@@ -180,7 +180,7 @@
                 donationGroupMin = args[1];
                 $.inidb.set('donations', 'donationGroupMin', args[1]);
                 $.say($.whisperPrefix(sender) + $.lang.get('donationhandler.donators.min', args[1]));
-                $.log.event(sender + ' set the minimum before being promoted to a Donator was set to ' + args[1]);
+                $.log.event(sender + ' set the minimum before being promoted to a Donator was set to ' + args[1] + '.');
             }
 
             /**
@@ -191,12 +191,12 @@
                     $.say($.whisperPrefix(sender) + $.lang.get('donationhandler.donations.announce.disable'));
                     announceDonations = false;
                     $.inidb.set('donations', 'announce', 'false');
-                    $.log.event(sender + ' disabled donation announcements');
+                    $.log.event(sender + ' disabled donation announcements.');
                 } else {
                     $.say($.whisperPrefix(sender) + $.lang.get('donationhandler.donations.announce.enable'));
                     announceDonations = true;
                     $.inidb.set('donations', 'announce', 'true');
-                    $.log.event(sender + ' enabled donation announcements');
+                    $.log.event(sender + ' enabled donation announcements.');
                 }
                 return;
             }
@@ -217,7 +217,7 @@
                 $.say($.whisperPrefix(sender) + $.lang.get('donationhandler.donations.reward.success', args[1], (args[1] == "1" ? $.pointNameSingle : $.pointNameMultiple).toLowerCase()));
                 $.inidb.set('donations', 'reward', args[1]);
                 donationReward = parseFloat(args[1]);
-                $.log.event(sender + ' changed donation reward to ' + args[1]);
+                $.log.event(sender + ' changed donation reward to ' + args[1] + '.');
                 return;
             }
 
@@ -245,7 +245,7 @@
                 donationLastMsg = $.getIniDbString('donations', 'lastmessage');
 
                 $.say($.whisperPrefix(sender) + $.lang.get('donationhandler.donations.' + comArg + '.success', message));
-                $.log.event(sender + ' set the donation message to ' + message);
+                $.log.event(sender + ' set the donation message to ' + message + '.');
             }
         }
     });

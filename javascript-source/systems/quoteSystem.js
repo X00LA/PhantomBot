@@ -119,7 +119,7 @@
                 $.say($.whisperPrefix(sender) + $.lang.get('quotesystem.edit.404'));
             }
 
-            $.log.event(sender + ' edited quote #' + quote);
+            $.log.event(sender + ' edited quote #' + quote + '.');
         }
 
         /**

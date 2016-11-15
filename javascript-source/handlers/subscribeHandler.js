@@ -29,8 +29,8 @@
             return;
         }
 
-        $.consoleLn('>> Enabling subscriber announcements');
-        $.log.event('Subscriber announcements enabled');
+        $.consoleLn('>> Enabling subscriber announcements...');
+        $.log.event('Subscriber announcements enabled.');
     });
 
     /**
@@ -94,13 +94,13 @@
                 $.inidb.set('subscribeHandler', 'subscriberWelcomeToggle', false);
                 subWelcomeToggle = false;
                 $.say($.whisperPrefix(sender) + $.lang.get('subscribehandler.new.sub.toggle.off'));
-                $.log.event(sender + ' disabled subscriber announcements');
+                $.log.event(sender + ' disabled subscriber announcements.');
                 return;
             } else {
                 $.inidb.set('subscribeHandler', 'subscriberWelcomeToggle', true);
                 subWelcomeToggle = true;
                 $.say($.whisperPrefix(sender) + $.lang.get('subscribehandler.new.sub.toggle.on'));
-                $.log.event(sender + ' enabled subscriber announcements');
+                $.log.event(sender + ' enabled subscriber announcements.');
                 return;
             }
         }
@@ -117,13 +117,13 @@
                 $.inidb.set('subscribeHandler', 'reSubscriberWelcomeToggle', false);
                 subWelcomeToggle = false;
                 $.say($.whisperPrefix(sender) + $.lang.get('subscribehandler.resub.toggle.off'));
-                $.log.event(sender + ' disabled re-subscriber announcements');
+                $.log.event(sender + ' disabled re-subscriber announcements.');
                 return;
             } else {
                 $.inidb.set('subscribeHandler', 'reSubscriberWelcomeToggle', true);
                 subWelcomeToggle = true;
                 $.say($.whisperPrefix(sender) + $.lang.get('subscribehandler.resub.toggle.on'));
-                $.log.event(sender + ' enabled re-subscriber announcements');
+                $.log.event(sender + ' enabled re-subscriber announcements.');
                 return;
             }
         }
@@ -142,7 +142,7 @@
             $.inidb.set('subscribeHandler', 'subscribeMessage', argsString);
             subMessage = argsString + '';
             $.say($.whisperPrefix(sender) + $.lang.get('subscribehandler.sub.msg.set'));
-            $.log.event(sender + ' changed the subscriber message to "' + subMessage + '"');
+            $.log.event(sender + ' changed the subscriber message to "' + subMessage + '".');
             return;
         }
 
@@ -160,7 +160,7 @@
             $.inidb.set('subscribeHandler', 'reSubscribeMessage', argsString);
             reSubMessage = argsString + '';
             $.say($.whisperPrefix(sender) + $.lang.get('subscribehandler.resub.msg.set'));
-            $.log.event(sender + ' changed the re-subscriber message to "' + reSubMessage + '"');
+            $.log.event(sender + ' changed the re-subscriber message to "' + reSubMessage + '".');
             return;
         }
 
@@ -178,7 +178,7 @@
             $.inidb.set('subscribeHandler', 'subscribeReward', parseInt(args[0]));
             subReward = parseInt(args[0]);
             $.say($.whisperPrefix(sender) + $.lang.get('subscribehandler.reward.set'));
-            $.log.event(sender + ' changed the subscriber reward to ' + subReward);
+            $.log.event(sender + ' changed the subscriber reward to ' + subReward + '.');
             return;
         }
 
@@ -210,7 +210,7 @@
                 return;
             }
             $.say('.subscribers');
-            $.log.event(sender + ' enabled subscriber only mode');
+            $.log.event(sender + ' enabled subscriber only mode.');
         }
 
         /**
@@ -222,7 +222,7 @@
                 return;
             }
             $.say('.subscribersoff');
-            $.log.event(sender + ' disabled subscriber only mode');
+            $.log.event(sender + ' disabled subscriber only mode.');
         }
     });
 

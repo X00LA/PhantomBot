@@ -95,7 +95,7 @@
         var Winner = $.randElement(entries);
         $.inidb.set('traffleresults', 'winner', $.username.resolve(Winner));
         $.say($.lang.get('ticketrafflesystem.winner', $.username.resolve(Winner)));
-        $.log.event('Winner of the ticket raffle was ' + Winner);
+        $.log.event('Winner of the ticket raffle was ' + Winner + '.');
     };
 
     function enterRaffle(user, times) {

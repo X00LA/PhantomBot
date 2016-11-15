@@ -11,9 +11,9 @@
         onlinePostDelay = 60 * 6e4; // 10 minutes must pass between Online Posts. This should take care of Twitch/OBS issues.
  
     /* Set default values for all configuration items. */
-    $.getSetIniDbString('twitter', 'message_online', 'Starting up a stream (twitchurl)');
-    $.getSetIniDbString('twitter', 'message_gamechange', 'Changing game over to (game) (twitchurl)');
-    $.getSetIniDbString('twitter', 'message_update', 'Still streaming (game) [(uptime)] (twitchurl)');
+    $.getSetIniDbString('twitter', 'message_online', 'Starting up a stream at (twitchurl)!');
+    $.getSetIniDbString('twitter', 'message_gamechange', 'Changing game over to (game) at (twitchurl)!');
+    $.getSetIniDbString('twitter', 'message_update', 'Still streaming (game) for [(uptime)] at (twitchurl)!');
 
     $.getSetIniDbNumber('twitter', 'polldelay_mentions', 60);
     $.getSetIniDbNumber('twitter', 'polldelay_retweets', 60);
@@ -393,7 +393,7 @@
                                                replace('(twitchurl)', 'https://www.twitch.tv/' + $.ownerName + '#' + uptimeSec).
                                                replace('(uptime)', hrs + ':' + min));
                 }
-                $.log.event('Sent Auto Update to Twitter');
+                $.log.event('Sent Auto Update to Twitter.');
             }
         }
     }

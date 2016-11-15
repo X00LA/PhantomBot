@@ -55,9 +55,9 @@
         var string = data[key.toLowerCase()],
             i;
         if (!string) {
-            $.log.error('Language string missing for "' + key + '"');
-            $.consoleLn('[lang.js] Missing string "' + key + '"');
-            return 'Could not find string for "' + key + '"';
+            $.log.error('Language string missing for "' + key + '".');
+            $.consoleLn('[lang.js] Missing string "' + key + '".');
+            return 'Could not find string for "' + key + '".';
         }
         if (string.equals('<<EMPTY_PLACEHOLDER>>')) {
             return '';

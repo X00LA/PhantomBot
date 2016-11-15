@@ -829,7 +829,7 @@
             }
 
             if (!$.commandExists(command)) {
-                consoleDebug('Command: !' + command + ' does not exist');
+                consoleDebug('Command: !' + command + ' does not exist!');
                 return;
             }
 
@@ -1219,7 +1219,7 @@
         callHook('initReady', null, true);
 
         if ($.isNightly.equals('true')) {
-            consoleLn('PhantomBot Nightly Build - No Support is Provided');
+            consoleLn('PhantomBot Nightly Build - No Support is Provided!');
             consoleLn('Please report bugs including the date of the Nightly Build and Repo Version to:');
             consoleLn('https://community.phantombot.net/category/23/bug-reports');
         } else {

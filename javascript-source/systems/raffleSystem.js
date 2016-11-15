@@ -94,7 +94,7 @@
             }, 6e4, 'raffleTimer');
         }
 
-        $.log.event(user + ' opened a raffle with the keyword !' + key);
+        $.log.event(user + ' opened a raffle with the keyword !' + key + '.');
     };
 
     /**
@@ -115,7 +115,7 @@
 
         $.say($.lang.get('rafflesystem.raffle.closed'));
         winner();
-        $.log.event(user + ' closed a raffle with the keyword !' + key);
+        $.log.event(user + ' closed a raffle with the keyword !' + key + '.');
     };
 
     /**
@@ -147,7 +147,7 @@
             }
         }
 
-        $.log.event('Winner for raffle with keyword !' + keyword + ' was ' + Winner);
+        $.log.event('Winner for raffle with keyword !' + keyword + ' was ' + Winner + '.');
     };
 
     /**
@@ -271,12 +271,12 @@
                     msgToggle = false;
                     $.inidb.set('settings', 'raffleMSGToggle', msgToggle);
                     $.say($.whisperPrefix(sender) + $.lang.get('rafflesystem.msg.disabled'));
-                    $.log.event(sender + ' disabled the raffle enter message');
+                    $.log.event(sender + ' disabled the raffle enter message.');
                 } else {
                     msgToggle = true;
                     $.inidb.set('settings', 'raffleMSGToggle', msgToggle);
                     $.say($.whisperPrefix(sender) + $.lang.get('rafflesystem.msg.enabled'));
-                    $.log.event(sender + ' enabled the raffle enter message');
+                    $.log.event(sender + ' enabled the raffle enter message.');
                 }
             }
 

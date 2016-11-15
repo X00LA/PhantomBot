@@ -402,7 +402,7 @@
             $.say($.whisperPrefix(sender) + $.lang.get('customcommands.add.success', action));
             $.inidb.set('command', action, argString);
             $.registerChatCommand('./commands/customCommands.js', action);
-            $.log.event(sender + ' added command !' + action + ' with the message "' + argString + '"');
+            $.log.event(sender + ' added command !' + action + ' with the message "' + argString + '".');
         }
 
         /**
@@ -429,7 +429,7 @@
             $.say($.whisperPrefix(sender) + $.lang.get('customcommands.edit.success', action));
             $.inidb.set('command', action, argString);
             $.registerChatCommand('./commands/customCommands.js', action);
-            $.log.event(sender + ' edited the command !' + action + ' with the message "' + argString + '"');
+            $.log.event(sender + ' edited the command !' + action + ' with the message "' + argString + '".');
         }
 
         /**
@@ -456,7 +456,7 @@
             $.inidb.del('permcom', action);
             $.inidb.del('pricecom', action);
             $.unregisterChatCommand(action);
-            $.log.event(sender + ' deleted the command !' + action);
+            $.log.event(sender + ' deleted the command !' + action + '.');
         }
 
         /**
@@ -495,7 +495,7 @@
             $.say($.whisperPrefix(sender) + $.lang.get('customcommands.alias.success', action + aliasArgs, subAction));
             $.inidb.set('aliases', subAction, action + aliasArgs);
             $.registerChatCommand('./commands/customCommands.js', subAction);
-            $.log.event(sender + ' added alias "!' + subAction + '" for "!' + action + aliasArgs + '"');
+            $.log.event(sender + ' added alias "!' + subAction + '" for "!' + action + aliasArgs + '".');
         }
 
         /**
@@ -516,7 +516,7 @@
             $.say($.whisperPrefix(sender) + $.lang.get("customcommands.alias.delete.success", action));
             $.unregisterChatCommand(action);
             $.inidb.del('aliases', action);
-            $.log.event(sender + ' deleted alias !' + action);
+            $.log.event(sender + ' deleted alias !' + action) + '.';
         }
 
         /**
@@ -554,7 +554,7 @@
                     } 
                 }
                 $.inidb.set('permcom', action, group);
-                $.log.event(sender + ' set permission on command !' + action + ' to group ' + group);
+                $.log.event(sender + ' set permission on command !' + action + ' to group ' + group + '.');
                 $.updateCommandGroup(action, group);
                 return;
             }
@@ -573,7 +573,7 @@
 
             $.say($.whisperPrefix(sender) + $.lang.get('customcommands.set.perm.success', action + " " + subcommand, $.getGroupNameById(group)));
             $.inidb.set('permcom', action + " " + subcommand, group);
-            $.log.event(sender + ' set permission on sub command !' + action + ' ' + subcommand + ' to group ' + group);
+            $.log.event(sender + ' set permission on sub command !' + action + ' ' + subcommand + ' to group ' + group + '.');
             $.updateSubcommandGroup(action, subcommand, group);
         }
 
@@ -608,14 +608,14 @@
                     $.inidb.set('pricecom', list[i], parseInt(subAction));
                 }
             }
-            $.log.event(sender + ' set price on command !' + action + ' to ' + subAction + ' ' + $.pointNameMultiple);
+            $.log.event(sender + ' set price on command !' + action + ' to ' + subAction + ' ' + $.pointNameMultiple + '.');
         }
 
         /**
          * @commandpath listtags - Displays a list of tags that may be used in custom commands
          */
         if (command.equalsIgnoreCase('listtags')) {
-            $.say($.whisperPrefix(sender) + 'Command tags: (sender), (@sender), (baresender), (random), (#), (uptime), (game), (status), (follows), (count), (touser), (price), (viewers), (pointname), (customapi), (echo), (customjsonapi), (age), (command command_name). (command command_name) must be the first item if used. Do not include the !');
+            $.say($.whisperPrefix(sender) + 'Command tags: (sender), (@sender), (baresender), (random), (#), (uptime), (game), (status), (follows), (count), (touser), (price), (viewers), (pointname), (customapi), (echo), (customjsonapi), (age), (command command_name). (command command_name) must be the first item if used. Do not include the "!".');
         }
 
         /**
@@ -700,7 +700,7 @@
 
             $.inidb.set('disabledCommands', action, true);
             $.say($.whisperPrefix(sender) + $.lang.get('customcommands.disable.success', action));
-            $.log.event(sender + ' disabled command !' + command);
+            $.log.event(sender + ' disabled command !' + command + '.');
         }
 
         /**
@@ -725,7 +725,7 @@
 
             $.inidb.del('disabledCommands', action);
             $.say($.whisperPrefix(sender) + $.lang.get('customcommands.enable.success', action));
-            $.log.event(sender + ' re-enabled command !' + command);
+            $.log.event(sender + ' re-enabled command !' + command + '.');
         }
 
         /**

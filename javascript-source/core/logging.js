@@ -162,11 +162,11 @@
             checkDate = $.systemTime() - rotateDays;
 
         if (rotateDays === 0) {
-            $.log.event('Log Rotation is Disabled');
+            $.log.event('Log Rotation is Disabled.');
             return;
         }
 
-        $.log.event('Starting Log Rotation');
+        $.log.event('Starting Log Rotation!');
         for (logDirIdx = 0; logDirIdx < logDirs.length; logDirIdx++) {
             logFiles = $.findFiles('./logs/' + logDirs[logDirIdx], 'txt');
             for (idx = 0; idx < logFiles.length; idx++) {
@@ -178,7 +178,7 @@
                 }
             }
         }
-        $.log.event('Finished Log Rotation');
+        $.log.event('Finished Log Rotation.');
     };
 
     /**

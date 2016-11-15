@@ -126,7 +126,7 @@
 
                 $.inidb.set('keywords', subAction, response);
                 $.say($.whisperPrefix(sender) + $.lang.get('keywordhandler.keyword.added', subAction));
-                $.log.event(sender + ' added keyword "' + subAction + '" with the message "' + response + '"');
+                $.log.event(sender + ' added keyword "' + subAction + '" with the message "' + response + '".');
                 return;
             }
 
@@ -146,7 +146,7 @@
                 
                 $.inidb.del('keywords', subAction);
                 $.say($.whisperPrefix(sender) + $.lang.get('keywordhandler.keyword.removed', subAction));
-                $.log.event(sender + ' removed the keyword "' + subAction + '"');
+                $.log.event(sender + ' removed the keyword "' + subAction + '".');
             }
         }
     });

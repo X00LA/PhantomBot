@@ -126,7 +126,7 @@
         /** START CONTRUCTOR YoutubeVideo() */
 
         if (!searchQuery) {
-            throw "No Search Query Given";
+            throw "No Search Query Given!";
         }
 
         if (!owner.equals(playlistDJname)) {
@@ -143,7 +143,7 @@
             var data = null;
             do {
                 data = $.youtube.SearchForVideo(searchQuery);
-            } while (data[0].length() < 11 && data[1] != "No Search Results Found");
+            } while (data[0].length() < 11 && data[1] != "No Search Results Found!");
 
             videoId = data[0];
             videoTitle = data[1];
