@@ -577,7 +577,6 @@
         } else if (cooldownMsg == "false") {
             sendDBUpdate("commands_cooldownmsg", "settings", "coolDownMsgEnabled", "true");
         }
-        sendCommand('reloadinit');
         setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME * 2);
     };
 
@@ -591,7 +590,6 @@
         } else if (permcomMsg == "false") {
             sendDBUpdate("commands_permcommsg", "settings", "permComMsgEnabled", "true");
         }
-        sendCommand('reloadinit');
         setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME * 2);
     };
 

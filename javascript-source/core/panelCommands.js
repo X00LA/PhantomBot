@@ -9,14 +9,6 @@
             args = event.getArgs(),
             action = args[0];
 
-        /* Reloads the init vars */
-        if (command.equalsIgnoreCase('reloadinit')) {
-            if (!$.isBot(sender)) {
-                return;
-            }
-            $.reloadInit();
-        }
-
         /** Adds or removes a user from the moderator cache */
         if (command.equalsIgnoreCase('permissionsetuser')) {
             if (!$.isBot(sender)) {
@@ -464,7 +456,6 @@
             $.registerChatCommand('./core/panelCommands.js', 'reloadtraffle', 30);
             $.registerChatCommand('./core/panelCommands.js', 'updatetimesettings', 30);
             $.registerChatCommand('./core/panelCommands.js', 'reloadlogs', 30);
-            $.registerChatCommand('./core/panelCommands.js', 'reloadinit', 30);
         }, 10000);
     });
 })();
