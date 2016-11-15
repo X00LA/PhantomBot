@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import org.apache.commons.io.FileUtils;
-import org.sqlite.SQLiteConfig;
 
 import me.mast3rplan.phantombot.PhantomBot;
 
@@ -44,7 +43,7 @@ public class MySQLStore extends DataStore {
     private String db = "";
     private String user = "";
     private String pass = "";
-   
+    private int autoCommitCtr = 0;
 
     public static MySQLStore instance() {
         return instance;
@@ -67,6 +66,7 @@ public class MySQLStore extends DataStore {
         this.pass = pass;
         try {
             connection = DriverManager.getConnection(db, user, pass);
+            connection.setAutoCommit(getAutoCommitCtr() == 0);
             com.gmt2001.Console.out.println("Connected to MySQL");
             return connection;
         } catch (SQLException ex) {
@@ -387,8 +387,9 @@ public class MySQLStore extends DataStore {
         fName = validateFname(fName);
         AddFile(fName);
 
+        setAutoCommit(false);
+
         try {
-            connection.setAutoCommit(false);
             try (PreparedStatement statement = connection.prepareStatement("REPLACE INTO phantombot_" + fName + " (value, section, variable) values(?, ?, ?);")) {
                 statement.setQueryTimeout(10);
                 for (int idx = 0; idx < keys.length; idx++) {
@@ -405,19 +406,13 @@ public class MySQLStore extends DataStore {
                 statement.executeBatch();
                 statement.clearBatch();
                 connection.commit();
-                connection.setAutoCommit(true);
             }
         } catch (SQLException ex) {
             com.gmt2001.Console.err.println(ex);
             com.gmt2001.Console.err.printStackTrace(ex);
         }
 
-        try {
-            connection.setAutoCommit(true);
-        } catch (SQLException ex) {
-            com.gmt2001.Console.err.println(ex);
-            com.gmt2001.Console.err.printStackTrace(ex);
-        }
+        setAutoCommit(true);
     }
 
     @Override
@@ -466,4 +461,34 @@ public class MySQLStore extends DataStore {
         }
     }
 
+    @Override
+    public void setAutoCommit(boolean mode) {
+        CheckConnection();
+
+        try {
+            if (mode == true) {
+                decrAutoCommitCtr();
+                if (getAutoCommitCtr() == 0) {
+                    connection.commit();
+                    connection.setAutoCommit(mode);
+                }
+            } else {
+                incrAutoCommitCtr();
+                connection.setAutoCommit(mode);
+                com.gmt2001.Console.debug.println(getAutoCommitCtr());
+            }
+        } catch (SQLException ex) {
+            com.gmt2001.Console.debug.println("MySQL commit was attempted too early, will perform later.");
+        }
+    }
+
+    private synchronized void incrAutoCommitCtr() {
+        autoCommitCtr++;
+    }
+    private synchronized void decrAutoCommitCtr() {
+        autoCommitCtr--;
+    }
+    private synchronized int getAutoCommitCtr() {
+        return autoCommitCtr;
+    }
 }

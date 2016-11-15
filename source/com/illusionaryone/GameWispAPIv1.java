@@ -1,7 +1,7 @@
 /* astyle --style=java --indent=spaces=4 */
 
 /*
- * Copyright (C) 2015 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,6 +46,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONStringer;
 
+import me.mast3rplan.phantombot.PhantomBot;
+
 /*
  * Communicates with the GameWisp v1 API server.
  *
@@ -56,9 +58,9 @@ public class GameWispAPIv1 {
     private static final GameWispAPIv1 instance = new GameWispAPIv1();
     private static final String sAPIURL = "https://api.gamewisp.com";
     private static final int iHTTPTimeout = 2 * 1000;
-    private static final String devKey = "32e01468d8bbc250721fe3b0d38c090a8ac589e";
-    private static final String devSec = "470651f241fec8972d94cdca5cbfdd5b9ec45ce";
-    private static final String devURI = "https://phantombot.net/gamewisp/genauth.php";
+    private static final String devKey = "d391637bb332e0b67d60388e2cac31dd93ad5bf";
+    private static final String devSec = "7e50eab14d7dc66e0018ac97aef4e52e564e991";
+    private static final String devURI = "https://phantombot.tv/gamewisp/genauth.php";
 
     private static String sAccessToken = "";
     private static String sRefreshToken = "";
@@ -119,7 +121,8 @@ public class GameWispAPIv1 {
 
         if (sAccessToken.length() == 0) {
             if (!noAccessWarning) {
-                com.gmt2001.Console.err.println("GameWispAPIv1: Attempting to use GameWisp API without key. Disable GameWisp module.");
+                com.gmt2001.Console.err.println("GameWispAPIv1: Attempting to use GameWisp API without key. Disabling the GameWisp module.");
+                PhantomBot.instance().getDataStore().set("modules", "./handlers/gameWispHandler.js", "false");
                 noAccessWarning = true;
             }
             JSONStringer jsonObject = new JSONStringer();
@@ -190,7 +193,7 @@ public class GameWispAPIv1 {
      * @param sAccessToken
      */
     public void SetAccessToken(String sAccessToken) {
-        this.sAccessToken = sAccessToken;
+        GameWispAPIv1.sAccessToken = sAccessToken;
     }
 
     /*
@@ -199,7 +202,7 @@ public class GameWispAPIv1 {
      * @param sRefreshToken
      */
     public void SetRefreshToken(String sRefreshToken) {
-        this.sRefreshToken = sRefreshToken;
+        GameWispAPIv1.sRefreshToken = sRefreshToken;
     }
 
     /*
@@ -208,7 +211,7 @@ public class GameWispAPIv1 {
      * @return JSONObject
      */
     public JSONObject getUserSubInfoJSON(String username) {
-        return readJsonFromGETUrl(sAPIURL + "/pub/v1/channel/subscriber-for-channel?access_token=" + this.sAccessToken + "&type=twitch&user_name=" + username + "&include=anniversaries,user,tier");
+        return readJsonFromGETUrl(sAPIURL + "/pub/v1/channel/subscriber-for-channel?access_token=" + GameWispAPIv1.sAccessToken + "&type=twitch&user_name=" + username + "&include=anniversaries,user,tier");
     }
 
     /*

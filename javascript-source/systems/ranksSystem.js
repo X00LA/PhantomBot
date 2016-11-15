@@ -47,6 +47,8 @@
     function hasRank(username) {
         var userTime;
 
+        username = username.toLowerCase();
+
         // Has a custom rank.
         if ($.inidb.exists('viewerRanks', username.toLowerCase())) {
             return true;
@@ -84,6 +86,8 @@
         var userTime,
             userLevel;
 
+        username = username.toLowerCase();
+
         if (!hasRank(username)) {
             return '';
         }
@@ -119,7 +123,7 @@
      * @returns {string}
      */
     function resolveRank(username) {
-        return (getRank(username.toLowerCase()) + ' ' + $.username.resolve(username.toLowerCase())).trim();
+        return (getRank(username.toLowerCase()) + ' ' + $.username.resolve(username)).trim();
     }
 
     /**
@@ -142,13 +146,6 @@
 
         if (isNaN(userTime)) {
             userTime = 0;
-        }
-
-        /* commandpath not provided as this is an internal Panel command. */
-        if (command.equalsIgnoreCase('rankreloadtable')) {
-            $.consoleDebug('Reloading Ranks Table after Panel Modification');
-            loadRanksTimeTable();
-            return;
         }
 
         /*
@@ -287,7 +284,6 @@
          * @commandpath rank del - Deletes customized rank.
          */
         if (command.equalsIgnoreCase('rank')) {
-
             if (args[0]) {
                 if (args[0].equalsIgnoreCase('del')) {
                     if (inidb.exists('viewerRanks', sender.toLowerCase())) {
@@ -356,9 +352,9 @@
                 nextLevel = parseInt(userLevel) + 1;
                 timeUntilNextRank = parseInt(ranksTimeTable[nextLevel]) - userTime;
                 if (userLevel == -1) {
-                    $.say($.lang.get('ranks.rank.norank.success', username, timeUntilNextRank));
+                    $.say($.lang.get('ranks.rank.norank.success', username, timeUntilNextRank, $.inidb.get('ranksMapping', ranksTimeTable[nextLevel].toString())));
                 } else {
-                    $.say($.lang.get('ranks.rank.success', username, $.inidb.get('ranksMapping', ranksTimeTable[userLevel].toString()), timeUntilNextRank));
+                    $.say($.lang.get('ranks.rank.success', username, $.inidb.get('ranksMapping', ranksTimeTable[userLevel].toString()), timeUntilNextRank, $.inidb.get('ranksMapping', ranksTimeTable[nextLevel].toString())));
                 }
             } else {
                 $.say($.lang.get('ranks.rank.maxsuccess', username, $.inidb.get('ranksMapping', ranksTimeTable[userLevel].toString())));
@@ -376,7 +372,6 @@
         if ($.bot.isModuleEnabled('./systems/ranksSystem.js')) {
             $.registerChatCommand('./systems/ranksSystem.js', 'rank', 7);
             $.registerChatCommand('./systems/ranksSystem.js', 'rankedit', 1);
-            $.registerChatCommand('./systems/ranksSystem.js', 'rankreloadtable', 1);
 
             $.registerChatSubcommand('rankedit', 'add', 1);
             $.registerChatSubcommand('rankedit', 'del', 1);
@@ -391,4 +386,5 @@
     $.resolveRank = resolveRank;
     $.getRank = getRank;
     $.hasRank = hasRank;
+    $.loadRanksTimeTable = loadRanksTimeTable;
 })();

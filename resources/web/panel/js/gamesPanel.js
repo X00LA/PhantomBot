@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,10 @@
  */
 
 (function() {
+    var toggleIcon = [];
 
+        toggleIcon['false'] = "<i style=\"color: #6136b1\" class=\"fa fa-circle-o\" />";
+        toggleIcon['true'] = "<i style=\"color: #6136b1\" class=\"fa fa-circle\" />";
     /**
      * @function onMessage
      */
@@ -44,6 +47,12 @@
 
             if (panelCheckQuery(msgObject, 'games_adventure')) {
                 for (idx in msgObject['results']) {
+                    if (msgObject['results'][idx]['key'] == 'warningMessage') {
+                        $('#adventure' + msgObject['results'][idx]['key']).html(toggleIcon[msgObject['results'][idx]['value']]);
+                    }
+                    if (msgObject['results'][idx]['key'] == 'enterMessage') {
+                        $('#adventure' + msgObject['results'][idx]['key']).html(toggleIcon[msgObject['results'][idx]['value']]);
+                    }
                    $('#adventure' + msgObject['results'][idx]['key'] + 'Input').attr('placeholder', msgObject['results'][idx]['value']);
                 }
             }
@@ -51,6 +60,18 @@
             if (panelCheckQuery(msgObject, 'games_slotmachine')) {
                 for (idx in msgObject['results']) {
                     $('#slotRewards' + idx + 'Input').val(msgObject['results'][idx]['value']);
+                }
+            }
+
+            if (panelCheckQuery(msgObject, 'games_slotmachineemotes')) {
+                for (idx in msgObject['results']) {
+                    $('#slotEmotes' + idx + 'Input').val(msgObject['results'][idx]['value']);
+                }
+            }
+
+            if (panelCheckQuery(msgObject, 'games_slotmachine')) {
+                for (idx in msgObject['results']) {
+                    $('#slotEmotes' + idx + 'Input').val(msgObject['results'][idx]['value']);
                 }
             }
 
@@ -85,6 +106,7 @@
         sendDBQuery('games_roulette', 'roulette', 'timeoutTime');
         sendDBKeys('games_adventure', 'adventureSettings');
         sendDBKeys('games_slotmachine', 'slotmachine');
+        sendDBKeys('games_slotmachineemotes', 'slotmachineemotes');
         sendDBKeys('games_rollprizes', 'rollprizes');
         sendDBQuery('games_gambling_range', 'gambling', 'winRange');
         sendDBQuery('games_gambling_percent', 'gambling', 'winGainPercent');
@@ -137,6 +159,26 @@
     }
 
     /**
+     * @function setSlotemotes() {
+     */
+    function setSlotEmotes() {
+        var val0 = $('#slotEmotes0Input').val(),
+            val1 = $('#slotEmotes1Input').val(),
+            val2 = $('#slotEmotes2Input').val(),
+            val3 = $('#slotEmotes3Input').val(),
+            val4 = $('#slotEmotes4Input').val();
+         
+        if (val0.length > 0 && val1.length > 0 && val2.length > 0 && val3.length > 0 && val4.length > 0) {
+            sendDBUpdate('slotEmotes0', 'slotmachineemotes', 'emote_0', val0);
+            sendDBUpdate('slotEmotes1', 'slotmachineemotes', 'emote_1', val1);
+            sendDBUpdate('slotEmotes2', 'slotmachineemotes', 'emote_2', val2);
+            sendDBUpdate('slotEmotes3', 'slotmachineemotes', 'emote_3', val3);
+            sendDBUpdate('slotEmotes4', 'slotmachineemotes', 'emote_4', val4);
+            setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+        }
+    }
+
+    /**
      * @function rouletteTimeout
      */
     function rouletteTimeout() {
@@ -166,8 +208,32 @@
      * @function adventureUpdateSetting
      * @param {String} setting
      */
-    function adventureUpdateSetting(setting) {
+    function adventureUpdateSetting(setting, l) {
         var value = $('#adventure' + setting + 'Input').val();
+
+        if (setting == 'warningMessage') {
+            $("#adventure" + setting).html("<i style=\"color: #6136b1\" class=\"fa fa-spinner fa-spin\" />");
+            if (l == 'true') {
+                sendDBUpdate('games_adventure', 'adventureSettings', setting, 'true');
+            } else {
+                sendDBUpdate('games_adventure', 'adventureSettings', setting, 'false');
+            }
+            setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+            setTimeout(function() { sendCommand('reloadadventure') }, TIMEOUT_WAIT_TIME);
+            return;
+        }
+
+        if (setting == 'enterMessage') {
+            $("#adventure" + setting).html("<i style=\"color: #6136b1\" class=\"fa fa-spinner fa-spin\" />");
+            if (l == 'true') {
+                sendDBUpdate('games_adventure', 'adventureSettings', setting, 'true');
+            } else {
+                sendDBUpdate('games_adventure', 'adventureSettings', setting, 'false');
+            }
+            setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+            setTimeout(function() { sendCommand('reloadadventure') }, TIMEOUT_WAIT_TIME);
+            return;
+        }
 
         if (value.length > 0) {
             if (setting == 'joinTime') {
@@ -189,6 +255,7 @@
             if (setting == 'maxBet') {
                 sendDBUpdate('games_adventure', 'adventureSettings', setting, value);
             }
+
            setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
            setTimeout(function() { sendCommand('reloadadventure') }, TIMEOUT_WAIT_TIME);
         }
@@ -253,4 +320,5 @@
     $.setSlotRewards = setSlotRewards;
     $.setRollRewards = setRollRewards;
     $.gambling = gambling;
+    $.setSlotEmotes = setSlotEmotes;
 })();

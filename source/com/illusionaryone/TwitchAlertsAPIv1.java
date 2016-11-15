@@ -1,7 +1,7 @@
 /* astyle --style=java --indent=spaces=4 */
 
 /*
- * Copyright (C) 2015 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /*
- * Communicates with the Twitch Alerts v1 API server.  Currently only
+ * Communicates with the Twitch Alerts v1 API server. (StreamLabs)  Currently only
  * supports the GET donations method.
  *
  * @author illusionaryone

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,9 +35,12 @@
         followerToggle = false,
         subToggle = false,
         reSubToggle = false,
-        donationTOggle = false,
-        donationGroup = false,         
-        gameWhispToggle = false;
+        donationToggle = false,
+        streamtipdonationToggle = false,
+        donationGroup = false,  
+        streamtipdonationGroup = false,         
+        gameWhispToggle = false,
+        bitsToggle = false;
 
     /*
      * onMessage
@@ -66,25 +69,29 @@
                         $('#globalGreetings').html(settingIcon[value]);
                     }
                     if (panelMatch(key, 'defaultJoin')) {
-                        $('#greetingDefaultInput').attr('placeholder', value).blur();
+                        $('#greetingDefaultInput').val(value);
                     }
                     if (panelMatch(key, 'cooldown')) {
-                        $('#greetingCooldownInput').attr('placeholder', value).blur();
+                        $('#greetingCooldownInput').val((value / 36e5));
                     }
                 }
             }
 
             if (panelCheckQuery(msgObject, 'greetings_followReward')) {
-                $('#followerRewardInput').attr('placeholder', msgObject['results']['followReward']).blur();
+                $('#followerRewardInput').val(msgObject['results']['followReward']);
             }
 
             if (panelCheckQuery(msgObject, 'greetings_followMessage')) {
-                $('#followerGreetingInput').attr('placeholder', msgObject['results']['followMessage']).blur();
+                $('#followerGreetingInput').val(msgObject['results']['followMessage']);
             }
 
             if (panelCheckQuery(msgObject, 'greetings_followToggle')) {
                 followToggle = msgObject['results']['followToggle'];
                 $('#followerGreetings').html(settingIcon[msgObject['results']['followToggle']]);
+            }
+
+            if (panelCheckQuery(msgObject, 'greetings_followDelay')) {
+                $('#followDelay').val( msgObject['results']['followDelay']);
             }
 
             if (panelCheckQuery(msgObject, 'greetings_donation')) {
@@ -93,7 +100,7 @@
                     value = msgObject['results'][idx]['value'];
 
                     if (panelMatch(key, 'announce')) {
-                        donationTOggle = value;
+                        donationToggle = value;
                         $('#donationGreetings').html(settingIcon[value]);
                     }
                     if (panelMatch(key, 'donationGroup')) {
@@ -101,16 +108,44 @@
                         $('#donationGroup').html(settingIcon[value]);
                     }
                     if (panelMatch(key, 'donationGroupMin')) {
-                        $('#donationGroupMin').attr('placeholder', value);
+                        $('#donationGroupMin').val(value);
                     }
                     if (panelMatch(key, 'reward')) {
-                        $('#donateRewardInput').attr('placeholder', value);
+                        $('#donateRewardInput').val(value);
                     }
                     if (panelMatch(key, 'message')) {
-                        $('#donateGreetingInput').attr('placeholder', value);
+                        $('#donateGreetingInput').val(value);
                     }
                     if (panelMatch(key, 'lastmessage')) {
-                        $('#donateLastMsgInput').attr('placeholder', value);
+                        $('#donateLastMsgInput').val(value);
+                    }
+                }
+            }
+
+            if (panelCheckQuery(msgObject, 'greetings_donationstreamtip')) {
+                for (idx in msgObject['results']) {
+                    key = msgObject['results'][idx]['key'];
+                    value = msgObject['results'][idx]['value'];
+
+                    if (panelMatch(key, 'announce')) {
+                        streamtipdonationToggle = value;
+                        $('#streamtipGreetings').html(settingIcon[value]);
+                    }
+                    if (panelMatch(key, 'donationGroup')) {
+                        streamtipdonationGroup = value;
+                        $('#streamtipdonationGroup').html(settingIcon[value]);
+                    }
+                    if (panelMatch(key, 'donationGroupMin')) {
+                        $('#streamtipdonationGroupMin').val(value);
+                    }
+                    if (panelMatch(key, 'reward')) {
+                        $('#streamtipdonateRewardInput').val(value);
+                    }
+                    if (panelMatch(key, 'message')) {
+                        $('#streamtipdonateGreetingInput').val(value);
+                    }
+                    if (panelMatch(key, 'lastmessage')) {
+                        $('#streamtipdonateLastMsgInput').val(value);
                     }
                 }
             }
@@ -121,10 +156,10 @@
                     value = msgObject['results'][idx]['value'];
 
                     if (panelMatch(key, 'subscribeMessage')) {
-                        $('#subGreetingInput').attr('placeholder', value);
+                        $('#subGreetingInput').val(value);
                     }
                     if (panelMatch(key, 'reSubscribeMessage')) {
-                        $('#resubGreetingInput').attr('placeholder', value);
+                        $('#resubGreetingInput').val(value);
                     }
                     if (panelMatch(key, 'subscriberWelcomeToggle')) {
                         subToggle = value;
@@ -135,7 +170,7 @@
                         $('#resubscriptionGreetings').html(settingIcon[value]);
                     }
                     if (panelMatch(key, 'subscribeReward')) {
-                        $('#subRewardInput').attr('placeholder', value);
+                        $('#subRewardInput').val(value);
                     }
                 }
             }
@@ -150,19 +185,40 @@
                         $('#gameWispGreetings').html(settingIcon[value]);
                     }
                     if (panelMatch(key, 'subscribeMessage')) {
-                        $('#gwSubGreetingInput').attr('placeholder', value);
+                        $('#gwSubGreetingInput').val(value);
                     }
                     if (panelMatch(key, 'reSubscribeMessage')) {
-                        $('#gwResubGreetingInput').attr('placeholder', value);
+                        $('#gwResubGreetingInput').val(value);
                     }
                     if (panelMatch(key, 'tierUpMessage')) {
-                        $('#gwTierupGreetingInput').attr('placeholder', value);
+                        $('#gwTierupGreetingInput').val(value);
                     }
                     if (panelMatch(key, 'subscribeReward')) {
-                        $('#gwSubRewardInput').attr('placeholder', value);
+                        $('#gwSubRewardInput').val(value);
                     }
                     if (panelMatch(key, 'reSubscribeReward')) {
-                        $('#gwResubRewardInput').attr('placeholder', value);
+                        $('#gwResubRewardInput').val(value);
+                    }
+                }
+            }
+
+            if (panelCheckQuery(msgObject, 'greetings_bits')) {
+                for (idx in msgObject['results']) {
+                    key = msgObject['results'][idx]['key'];
+                    value = msgObject['results'][idx]['value'];
+
+                    if (panelMatch(key, 'toggle')) {
+                        bitsToggle = value;
+                        $('#bitsToggle').html(settingIcon[value]);
+                    }
+                    if (panelMatch(key, 'message')) {
+                        $('#bitsMessage').val(value);
+                    }
+                    if (panelMatch(key, 'reward')) {
+                        $('#bitsReward').val(value);
+                    }
+                    if (panelMatch(key, 'minimum')) {
+                        $('#bitsMinimum').val(value);
                     }
                 }
             }
@@ -210,10 +266,13 @@
         sendDBQuery('greetings_followReward', 'settings', 'followReward');
         sendDBQuery('greetings_followMessage', 'settings', 'followMessage');
         sendDBQuery('greetings_followToggle', 'settings', 'followToggle');
+        sendDBQuery('greetings_followDelay', 'settings', 'followDelay');
         sendDBKeys('greetings_donation', 'donations');
+        sendDBKeys('greetings_donationstreamtip', 'streamtip');
         sendDBKeys('greetings_subscribers', 'subscribeHandler');
         sendDBKeys('greetings_gamewisp', 'gameWispSubHandler');
         sendDBKeys('greetings_gamewispTiers', 'gameWispTiers');
+        sendDBKeys('greetings_bits', 'bitsSettings');
     }
 
     /**
@@ -257,13 +316,23 @@
         }
         if (panelMatch(table, 'donations')) {
             $('#donationGreetings').html(spinIcon);
-            if (donationTOggle == "true") {
+            if (donationToggle == "true") {
                 sendDBUpdate('greetings_greeting', 'donations', 'announce', 'false');
                 sendCommand('donationpanelupdate');
             } else {
                 sendDBUpdate('greetings_greeting', 'donations', 'announce', 'true');
                 sendCommand('donationpanelupdate');
             }
+        }
+        if (panelMatch(table, 'streamtip')) {
+            $('#streamtipGreetings').html(spinIcon);
+            if (streamtipdonationToggle == "true") {
+                sendDBUpdate('greetings_greeting', 'streamtip', 'announce', 'false');
+                sendCommand('donationpanelupdatestreamtip');
+            } else {
+                sendDBUpdate('greetings_greeting', 'streamtip', 'announce', 'true');
+                sendCommand('donationpanelupdatestreamtip');
+            } 
         }
         if (panelMatch(table, 'donationGroup')) {
             $('#donationGroup').html(spinIcon);
@@ -273,6 +342,16 @@
             } else {
                 sendDBUpdate('greetings_greeting', 'donations', 'donationGroup', 'true');
                 sendCommand('donationpanelupdate');
+            }
+        }
+        if (panelMatch(table, 'streamtipdonationGroup')) {
+            $('#streamtipdonationGroup').html(spinIcon);
+            if (streamtipdonationGroup == "true") {
+                sendDBUpdate('greetings_greeting', 'streamtip', 'donationGroup', 'false');
+                sendCommand('donationpanelupdatestreamtip');
+            } else {
+                sendDBUpdate('greetings_greeting', 'streamtip', 'donationGroup', 'true');
+                sendCommand('donationpanelupdatestreamtip');
             }
         }
         if (panelMatch(table, 'subscribeHandler') && panelMatch(key, 'subscriberWelcomeToggle')) { 
@@ -295,6 +374,16 @@
                 sendCommand('subscriberpanelupdate');
             }
         }
+        if (panelMatch(table, 'bitsSettings') && panelMatch(key, 'toggle')) { 
+            $('#bitsToggle').html(spinIcon);
+            if (bitsToggle == "true") {
+                sendDBUpdate('greetings_bits', 'bitsSettings', 'toggle', 'false');
+                sendCommand('reloadbits');
+            } else {
+                sendDBUpdate('greetings_bits', 'bitsSettings', 'toggle', 'true');
+                sendCommand('reloadbits');
+            }
+        }
         if (panelMatch(table, 'gameWispSubHandler')) { 
             $('#gameWispGreetings').html(spinIcon);
             if (gameWhispToggle == "true") {
@@ -314,9 +403,17 @@
      * @param {String} table
      * @param {String} key
      */
-    function updateGreetingData(inputId, table, key)
-    {
+    function updateGreetingData(inputId, table, key) {
         var value = $('#' + inputId).val();
+
+        if (inputId == "greetingCooldownInput") {
+            if (value.length > 0) {
+                value = String(value * 36e5);
+                sendDBUpdate('greetings_update', 'greeting', 'cooldown', value);
+                setTimeout(function() { doQuery(); sendCommand('greetingspanelupdate'); }, TIMEOUT_WAIT_TIME);
+                return;
+            }
+        }
 
         if (value.length > 0) {
             sendDBUpdate('greetings_update', table, key, value);
@@ -330,8 +427,14 @@
             if (panelMatch(table, 'donations')) {
                 sendCommand('donationpanelupdate');
             }
+            if (panelMatch(table, 'streamtip')) {
+                sendCommand('donationpanelupdatestreamtip');
+            }
             if (panelMatch(table, 'subscribeHandler')) {
-                sendCommand('subscriberpanelupdate');
+                sendCommand('subscribepanelupdate');
+            }
+            if (panelMatch(table, 'bitsSettings')) {
+                sendCommand('reloadbits');
             }
             if (panelMatch(table, 'gameWispSubHandler')) {
                 sendCommand('gamewisppanelupdate');

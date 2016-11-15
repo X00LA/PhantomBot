@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,6 +74,7 @@
                 handlePanel('./commands/customCommands.js', '#_viewCommandAliasesPanel', moduleEnabled);
                 handlePanel('./commands/customCommands.js', '#_commandPermissionPanel', moduleEnabled);
                 handlePanel('./commands/customCommands.js', '#_commandPricesPanel', moduleEnabled);
+                handlePanel('./commands/customCommands.js', '#_commandPayPanel', moduleEnabled);
             }
             if (panelMatch(module, './systems/pointSystem.js')) {
                 handlePanel('./systems/pointSystem.js', '#_pointsConfigPanel', moduleEnabled);
@@ -94,6 +95,14 @@
                 handlePanel('./handlers/donationHandler.js', '#_donationAlertsPanel', moduleEnabled);
                 handlePanel('./handlers/donationHandler.js', '#_donationsPanel', moduleEnabled);
             }
+            if (panelMatch(module, './handlers/streamTipHandler.js')) {
+                handlePanel('./handlers/streamTipHandler.js', '#_streamtipdonationAlertsPanel', moduleEnabled);
+                handlePanel('./handlers/streamTipHandler.js', '#_streamtipdonationsPanel', moduleEnabled);
+            }
+            if (panelMatch(module, './handlers/bitsHandler.js')) {
+                handlePanel('./handlers/bitsHandler.js', '#_twitchBitsAlertsPanel', moduleEnabled);
+                handlePanel('./handlers/bitsHandler.js', '#_twitchBitsPanel', moduleEnabled);
+            }
             if (panelMatch(module, './handlers/subscribeHandler.js')) {
                 handlePanel('./handlers/subscribeHandler.js', '#_twitchSubPanel', moduleEnabled);
             }
@@ -113,6 +122,9 @@
             }
             if (panelMatch(module, './systems/pollSystem.js')) {
                 handlePanel('./systems/pollSystem.js', '#_pollPanel', moduleEnabled);
+            }
+            if (panelMatch(module, './systems/queueSystem.js')) {
+                handlePanel('./systems/queueSystem.js', '#_queuePanel', moduleEnabled);
             }
             if (panelMatch(module, './handlers/hostHandler.js')) {
                 handlePanel('./handlers/hostHandler.js', '#_hostChannelPanel', moduleEnabled);

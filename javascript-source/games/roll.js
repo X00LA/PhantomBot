@@ -97,15 +97,11 @@
                         break;
                 }
 
-                $.inidb.incr('points', sender, prizes[dice1 - 1]);
                 $.say(resultMessage + $.gameMessages.getWin(sender));
+                $.inidb.incr('points', sender, prizes[dice1 - 1]);
             } else {
                 $.say(resultMessage + $.gameMessages.getLose(sender));
             }
-        }
-
-        if (command.equalsIgnoreCase('loadprizesroll')) {
-            loadPrizes();
         }
     });
 
@@ -115,7 +111,6 @@
     $.bind('initReady', function() {
         if ($.bot.isModuleEnabled('./games/roll.js')) {
             $.registerChatCommand('./games/roll.js', 'roll');
-            $.registerChatCommand('./games/roll.js', 'loadprizesroll');
             $.registerChatSubcommand('roll', 'rewards', 1);
         }
     });
@@ -126,4 +121,6 @@
     if ($.bot.isModuleEnabled('./games/roll.js') && !$.bot.isModuleEnabled('./systems/pointSystem.js')) {
         $.log.error("Disabled. ./systems/pointSystem.js is not enabled.");
     }
+
+    $.loadPrizes = loadPrizes;
 })();

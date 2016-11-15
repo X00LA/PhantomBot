@@ -1,34 +1,50 @@
-# PhantomBot  
 
-#### *PhantomBot is a multi-purpose, cross-platform, user-hosted chat bot for Twitch.TV*
- [<img src="https://discordapp.com/api/servers/107910097937682432/widget.png?style=banner5?style=banner5">](https://discord.gg/0bN1J1JWPFGCxOFM)  
-  
-Dowload your copy over on our [website](https://phantombot.net/downloads)!
 
-*We're currently in the process of a complete overhaul of the original PhantomBot code, that was put together by Mast3rplan, and then continued by gmt2001 and GloriousEggroll, and PhantomIndex.*
+# <img alt="PhantomBot" src="https://i.zelakto.tv/hTWdxKG.png" />
 
-*Credits for v1.6.6.2 and older go to everyone who contributed in various ways to the repo of GloriousEggroll. Notably gmt2001, and GloriousEggroll himself. From v2.0 and onward it will be purely the efforts of the team outlined below.*
+ [ ![Build Status](https://travis-ci.org/PhantomBot/PhantomBot.svg?branch=master)](https://travis-ci.org/PhantomBot/PhantomBot) 
+ [<img src="https://discordapp.com/api/guilds/107910097937682432/widget.png?style=shield">](https://discord.gg/Xdh5SRY)  
 
-*Honorable mention to Juraji and SimeonF for the massive script overhaul and core work.*
+[**PhantomBot**](https://phantombot.tv) is a Twitch chat bot powered by Java. PhantomBot has many modern features out of the box such as a built-in webpanel, enhanced moderation, games, a point system, raffles, custom commands, a music player, [and more](https://phantombot.tv/features)! PhantomBot can also be integrated with many services such as [Twitter](https://twitter.com), [GameWisp](https://gamewisp.com), [StreamTip](https://streamtip.com) and [StreamLabs](https://streamlabs.com)!
 
-###Prerequisites
-- [Java 7/8](https://www.java.com/en/download/)
+Additional functionality is enabled through the use of third-party modules.
 
-###Support:
-Get support via our [forums](https://community.phantombot.net/)!
+* [Get PhantomBot](https://phantombot.tv/ "PhantomBot")
+* [Full Feature List](https://phantombot.tv/features "PhantomBot Features")
+* [Community Forums](https://community.phantombot.tv)
+* [Documentation & Installation Instructions](https://docs.phantombot.tv)
+* [PhantomBot Blog](https://blog.phantombot.tv)
+* [Follow us on Twitter](https://www.twitter.com/PhantomBotApp/ "PhantomBot Twitter")
 
-###Who does what?
-These are the people who will provide help for specific things related to the bot.
-- **@PhantomIndex**: JavaScript modules & General bot use 
-- **@Kojitsari**: JavaScript modules & General bot use 
-- **@scaniaTV**: Bot core, JavaScript modules & General bot use
-- **@Zelakto**: Website & General bot use
-- **@IllusionaryOne**: Bot core, Javascript modules & General bot use
+## Screenshots
 
-###TravisCI
-The Java sources are tested against:
-  - OracleJDK 8
-  - OracleJDK 7
-  - OpenJDK 7
- 
-[ ![Build Status](https://travis-ci.org/PhantomBot/PhantomBot.svg?branch=master)](https://travis-ci.org/PhantomBot/PhantomBot) 
+[![](https://i.zelakto.tv/cbD6vV7.png)](https://i.zelakto.tv/OmvE0rY.png)
+[![](https://i.zelakto.tv/l3WNPWK.png)](https://i.zelakto.tv/6h38mvL.png)
+[![](https://i.zelakto.tv/xGoRGJs.png)](https://i.zelakto.tv/VuN7GEp.png)
+
+## How can I follow along/contribute?
+
+* Our feature roadmap is hosted on [Trello](https://trello.com/b/prjUApDO). Feel free to check out our [Version History](https://phantombot.tv/changelog) as well.
+* If you are a developer, feel free to check out the source and submit pull requests.
+* Please don't forget to **watch**, and **star our repo**! Join our growing [community](https://community.phantombot.tv) to keep up to date with the latest PhantomBot development.
+* A huge thanks goes out to the people who have [already contributed to the project](https://github.com/PhantomBot/PhantomBot/graphs/contributors).
+
+## Requirements
+
+PhantomBot requires the following software to be installed:
+
+* [Java 8](https://www.java.com/en/download/)
+
+## Installation
+Please refer to platform-specific installation documentation.
+* [Windows](https://docs.phantombot.tv/kb/setup-guide-windows)
+* [Linux](https://docs.phantombot.tv/kb/YUlwD8VVHNS7hhpd)
+* [macOS](https://docs.phantombot.tv/kb/rBauYDIRjyNlQEfS)
+
+## Upgrading PhantomBot
+
+Detailed upgrade instructions are listed on our [documentation](https://docs.phantombot.tv/kb/update).
+
+## License
+
+PhantomBot is licensed under the [**GNU General Public License v3 (GPL-3)**](https://www.gnu.org/copyleft/gpl.html).

@@ -10,7 +10,7 @@
  */
 (function() {
     var autoGreetEnabled = $.getSetIniDbBoolean('greeting', 'autoGreetEnabled', false),
-        defaultJoinMessage = $.getSetIniDbString('greeting', 'defaultJoin', ''),
+        defaultJoinMessage = $.getSetIniDbString('greeting', 'defaultJoin', '(name) joined!'),
         greetingCooldown = $.getSetIniDbNumber('greeting', 'cooldown', (6 * 36e5)); // 6 hours
 
     /**
@@ -55,11 +55,6 @@
             action = args[0],
             cooldown,
             message;
-        
-        /* Hidden from command list, for panel only. */
-        if (command.equalsIgnoreCase('greetingspanelupdate')) {
-            greetingspanelupdate();
-        }
     
         /**
          * @commandpath greeting - Base command for controlling greetings.
@@ -75,7 +70,7 @@
             }
 
             /**
-             * @commandpath greeting cooldown [minutes] - Cooldown in minutes before displaying a greeting for a person rejoining chat.
+             * @commandpath greeting cooldown [hours] - Cooldown in hours before displaying a greeting for a person rejoining chat.
              */
             if (action.equalsIgnoreCase('cooldown')) {
                 if (!args[1]) {
@@ -88,9 +83,9 @@
                     return;
                 }
 
-                greetingCooldown = cooldown * 6e5; // Convert minutes to ms
+                greetingCooldown = cooldown * 36e5; // Convert hours to ms
                 $.inidb.set('greeting', 'cooldown', greetingCooldown);
-                $.say($.whisperPrefix(sender) + $.lang.get('greetingsystem.cooldown.success', cooldown, (cooldown / 60).toFixed(2)));
+                $.say($.whisperPrefix(sender) + $.lang.get('greetingsystem.cooldown.success', cooldown));
                 return;
             }
 
@@ -162,7 +157,6 @@
      */
     $.bind('initReady', function() {
         if ($.bot.isModuleEnabled('./systems/greetingSystem.js')) {
-            $.registerChatCommand('./systems/greetingSystem.js', 'greetingspanelupdate', 1);
             $.registerChatCommand('./systems/greetingSystem.js', 'greeting', 6);
             $.registerChatSubcommand('greeting', 'cooldown', 1);
             $.registerChatSubcommand('greeting', 'toggledefault', 2);
@@ -171,4 +165,6 @@
             $.registerChatSubcommand('greeting', 'disable', 6);
         }
     });
+
+    $.greetingspanelupdate = greetingspanelupdate;
 })();

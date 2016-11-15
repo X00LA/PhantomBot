@@ -1,29 +1,43 @@
 (function() {
-    var currentHostTarget = '';
+    var currentHostTarget = '',
+        respond = getSetIniDbBoolean('settings', 'response_@chat', true),
+        action = getSetIniDbBoolean('settings', 'response_action', false);
+
+    /* 
+     * @function reloadMisc
+     */
+    function reloadMisc() {
+        respond = getIniDbBoolean('settings', 'response_@chat');
+        action = getIniDbBoolean('settings', 'response_action');
+    }
 
     /**
-     * @function contains
+    ** This function sometimes does not work. So only use it for stuff that people dont use much
+     * @function hasKey
      * @export $.list
      * @param {Array} list
      * @param {*} value
      * @param {Number} [subIndex]
      * @returns {boolean}
      */
-    function contains(list, value, subIndex) {
+    function hasKey(list, value, subIndex) {
         var i;
-        for (i in list) {
-            if (subIndex > -1) {
-                if (list[i][subIndex] == value) {
+
+        if (subIndex > -1) {
+            for (i in list) {
+                if (list[i][subIndex].equalsIgnoreCase(value)) {
                     return true;
                 }
-            } else {
-                if (list[i] == value) {
+            }
+        } else {
+            for (i in list) {
+                if (list[i].equalsIgnoreCase(value)) {
                     return true;
                 }
             }
         }
         return false;
-    };
+    }
 
     /**
      * @function isKnown
@@ -32,8 +46,8 @@
      * @returns {boolean}
      */
     function isKnown(username) {
-        return $.inidb.exists('visited', username);
-    };
+        return $.inidb.exists('visited', username.toLowerCase());
+    }
 
     /**
      * @function isFollower
@@ -43,16 +57,18 @@
      */
     function isFollower(username) {
         var userFollowsCheck;
-        if ($.inidb.exists('followed', username)) {
+
+        if ($.inidb.exists('followed', username.toLowerCase())) {
             return true;
         } else {
-            userFollowsCheck = $.twitch.GetUserFollowsChannel($.username.resolve(username.toLowerCase()), $.channelName);
+            userFollowsCheck = $.twitch.GetUserFollowsChannel(username.toLowerCase(), $.channelName.toLowerCase());
             if (userFollowsCheck.getInt('_http') == 200) {
+                $.inidb.set('followed', username.toLowerCase(), true);
                 return true;
             }
         }
         return false;
-    };
+    }
 
     /**
      * @function getCurrentHostTarget
@@ -60,7 +76,7 @@
      * @returns {string}
      */
     function getCurrentHostTarget() {
-        return currentHostTarget
+        return currentHostTarget.toLowerCase();
     }
 
     /**
@@ -87,7 +103,7 @@
                 return str.length;
             }
         }
-    };
+    }
 
     /**
      * @function say
@@ -95,34 +111,30 @@
      * @param {string} message
      */
     function say(message) {
-        if ($.channel !== null) {
-            if (message.substr(0, 1).equals('.')) {
-                $.channel.say(message);
-                $.consoleLn('[CHAT] ' + message);
-            }
-
-            if (message.startsWith('@') && message.endsWith(', ')) {
+        if ($.session !== null) {
+            if (message.startsWith('.')) {
+                $.session.say(message);
                 return;
             }
-    
-            if (!message.substr(0, 1).equals('.')) {
-                if ($.getIniDbBoolean('settings', 'response_@chat') && (!$.getIniDbBoolean('settings', 'response_action') || message.substr(0, 2).equals('/w'))) {
-                    $.consoleLn('[CHAT] ' + message);
-                    $.channel.say(message);
-                } else {
-                    if ($.getIniDbBoolean('settings', 'response_@chat') && $.getIniDbBoolean('settings', 'response_action')) {
-                        $.consoleLn('[COLOR CHAT] ' + message);
-                        $.channel.say('/me ' + message);
-                    }
-                    if (!$.getIniDbBoolean('settings', 'response_@chat')) {
-                        $.consoleLn('[MUTED] ' + message);
-                    }
+
+            if (message.startsWith('@') && message.endsWith(',')) {
+                return;
+            }
+
+            if (respond && (!action || message.startsWith('/w'))) {
+                $.session.say(message);
+            } else {
+                if (respond && action) {
+                    $.session.say('/me ' + message);
+                }
+                if (!respond) {
+                    $.consoleLn('[MUTED] ' + message);
                 }
             }
         }
 
         $.log.file('chat', '' + $.botName.toLowerCase() + ': ' + message);
-    };
+    }
 
     /**
      * @function systemTime
@@ -131,7 +143,7 @@
      */
     function systemTime() {
         return parseInt(java.lang.System.currentTimeMillis());
-    };
+    }
 
     /**
      * @function rand
@@ -144,8 +156,8 @@
             return max;
         }
         $.random = new java.security.SecureRandom();
-        return Math.abs($.random.nextInt()) % max;
-    };
+        return (Math.abs($.random.nextInt()) % max);
+    }
 
     /**
      * @function randRange
@@ -158,8 +170,8 @@
         if (min == max) {
             return min;
         }
-        return $.rand(max) + min;
-    };
+        return (rand(max - min + 1) + min);
+    }
 
     /**
      * @function randElement
@@ -171,8 +183,8 @@
         if (array == null) {
             return null;
         }
-        return array[$.randRange(0, array.length - 1)];
-    };
+        return array[randRange(0, array.length - 1)];
+    }
 
     /**
      * @function arrayShuffle
@@ -198,7 +210,7 @@
      */
     function randInterval(min, max) {
         return Math.floor(Math.random() * (max - min + 1) + min);
-    };
+    }
 
     /**
      * @function trueRandRange
@@ -219,7 +231,7 @@
                 json = new JSONObject('{}'),
                 parameters = new JSONObject('{}'),
                 header = new HashMap(1),
-                id = $.rand(65535),
+                id = rand(65535),
                 request;
 
             header.put('Content-Type', 'application/json-rpc');
@@ -265,8 +277,8 @@
             $.log.error('Failed to use random.org: ' + error);
         }
 
-        return $.randRange(min, max);
-    };
+        return randRange(min, max);
+    }
 
     /**
      * @function trueRandElement
@@ -278,8 +290,8 @@
         if (array == null) {
             return null;
         }
-        return array[$.trueRand(array.length - 1)];
-    };
+        return array[trueRand(array.length - 1)];
+    }
 
     /**
      * @function trueRand
@@ -288,8 +300,8 @@
      * @returns {Number}
      */
     function trueRand(max) {
-        return $.trueRandRange(0, max);
-    };
+        return trueRandRange(0, max);
+    }
 
     /**
      * @function outOfRange
@@ -301,7 +313,7 @@
      */
     function outOfRange(number, min, max) {
         return (number < min && number > max);
-    };
+    }
 
     /**
      * @function getOrdinal
@@ -312,8 +324,8 @@
     function getOrdinal(number) {
         var s = ["th", "st", "nd", "rd"],
             v = number % 100;
-        return number + (s[(v - 20) % 10] || s[v] || s[0]);
-    };
+        return (number + (s[(v - 20) % 10] || s[v] || s[0]));
+    }
 
     /**
      * @function getPercentage
@@ -324,7 +336,7 @@
      */
     function getPercentage(current, total) {
         return Math.ceil((current / total) * 100);
-    };
+    }
 
     /**
      * @function getIniDbBoolean
@@ -340,7 +352,7 @@
         } else {
             return (defaultValue);
         }
-    };
+    }
 
     /**
      * @function getSetIniDbBoolean
@@ -357,7 +369,7 @@
             $.inidb.set(fileName, key, defaultValue.toString());
             return (defaultValue);
         }
-    };
+    }
 
 
     /**
@@ -369,7 +381,7 @@
      */
     function setIniDbBoolean(fileName, key, state) {
         $.inidb.set(fileName, key, state.toString());
-    };
+    }
 
     /**
      * @function getIniDbString
@@ -384,7 +396,7 @@
         } else {
             return (defaultValue);
         }
-    };
+    }
 
     /**
      * @function getSetIniDbString
@@ -400,7 +412,7 @@
             $.inidb.set(fileName, key, defaultValue);
             return (defaultValue);
         }
-    };
+    }
 
 
     /**
@@ -532,7 +544,7 @@
         }
     
         return string;
-    };
+    }
 
     /**
      * @function userPrefix
@@ -544,16 +556,16 @@
             return '@' + $.username.resolve(username) + ' ';
         } 
         return '@' + $.username.resolve(username) + ', ';
-    };
+    }
 
     /** Export functions to API */
     $.list = {
-        contains: contains,
+        hasKey: hasKey
     };
 
     $.user = {
         isKnown: isKnown,
-        isFollower: isFollower,
+        isFollower: isFollower
     };
 
     $.arrayShuffle = arrayShuffle;
@@ -583,4 +595,5 @@
     $.paginateArray = paginateArray;
     $.replace = replace;
     $.userPrefix = userPrefix;
+    $.reloadMisc = reloadMisc;
 })();

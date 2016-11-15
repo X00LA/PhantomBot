@@ -1,7 +1,7 @@
 /* astyle --style=java --indent=spaces=4 */
 
 /*
- * Copyright (C) 2016 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,11 +69,10 @@ public class TwitterAPI {
     private String username;
     private String oauthAccessToken;
     private String oauthAccessSecret;
+    private String consumerKey;
+    private String consumerSecret;
     private AccessToken accessToken = null;
     private Twitter twitter = null;
-
-    private final String consumerKey = "tNuyxOX6kCnLdBhYBmyBqG6zr";
-    private final String consumerSecret = "0lQIKeaRWKG9CQkfr2a2pwrqQBxl0IK0FqDwgfmIZdVybHnXeX";
 
     /*
      * Instance method for Twitter API.
@@ -114,6 +113,24 @@ public class TwitterAPI {
      */
     public void setSecretToken(String secretToken) {
         this.oauthAccessSecret = secretToken;
+    }
+
+    /*
+     * Stores the secret token used for authenticating the user to Twitter.
+     *
+     * @param  setConsumerKey  Twitter provided OAuth secret token.
+     */
+    public void setConsumerKey(String consumerKey) {
+        this.consumerKey = consumerKey;
+    }
+
+    /*
+     * Stores the secret token used for authenticating the user to Twitter.
+     *
+     * @param  setConsumerSecret  Twitter provided OAuth secret token.
+     */
+    public void setConsumerSecret(String consumerSecret) {
+        this.consumerSecret = consumerSecret;
     }
 
     /*
@@ -159,7 +176,7 @@ public class TwitterAPI {
         }
 
         try {
-            Status status = twitter.updateStatus(statusString);
+            Status status = twitter.updateStatus(statusString.replaceAll("@", ""));
             com.gmt2001.Console.debug.println("TwitterAPI::updateStatus: Success");
             return "true";
         } catch (TwitterException ex) {
@@ -181,7 +198,7 @@ public class TwitterAPI {
         }
 
         try {
-            StatusUpdate statusUpdate = new StatusUpdate(statusString);
+            StatusUpdate statusUpdate = new StatusUpdate(statusString.replaceAll("@", ""));
             statusUpdate.setMedia(new File(filename));
             Status status = twitter.updateStatus(statusUpdate);
             com.gmt2001.Console.debug.println("TwitterAPI::updateStatus: Success");

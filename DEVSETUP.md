@@ -11,8 +11,6 @@ It's very global, so you might need to take some extra steps to get it to work f
 2. Check out your for and open it in your favorite IDE.
 2. Set the project Java SDK to [1.8](http://www.oracle.com/technetwork/java/javase/overview/index.html).
 3. Import `build.xml` into your [ANT](http://ant.apache.org/) task manager.
-4. Setup your favorite JavaScript minifier to mangle & minify all sources from `./javascript-sources/` and have it put the output in `./resources/scripts/`.  
-  *The most commonly used minifier is [UglifyJS](https://www.npmjs.com/package/uglify-js) with [NodeJS](https://nodejs.org).*
 
 DONE! Happy coding <3
 
@@ -37,9 +35,36 @@ DONE! Happy coding <3
 ##Netbeans
 You can get Netbeans [here](https://netbeans.org/downloads/).
 
-Yet to be written.
+1. Open up NetBeans. 
+2. Clone the repository using Team -> Git -> Clone.
+3. Enter the repository url and your GitHub password or select your ssh key.
+4. Choose a destination folder. Next page!
+5. Select the branches you want. Click Next!
+6. Check if everything is okay. Then click Finish!
+7. When the clone process is finished click Create Project. Select 
+  Java -> Java Free-Form Project and click Next. 
+8. Click on the first *"Browse"* button. Select the directory you cloned to and 
+  click *"Open"*. Then enter a project name. Click 2 times next. 
+9. Press the first *"Add Folder"* button and select the *"javascript-source"* folder.
+  Set the *"Source Level"* to *"JDK 1.8"* and the *"Encoding"* to *"UTF-8"*. Next page! 
+10. Click on *"Add JAR/Folder"*, go the `./libraries` folder and select every jar file (Ctrl + A). 
+  Press the "Finish" button and we're finished!
+
+DONE! Happy coding <3
 
 ##Eclipse
 You can get Eclipse [here](https://www.eclipse.org/downloads/).
 
-Yet to be written.
+1. Open up Eclipse
+2. Clone repository using File -> Import
+3. Type on filter text **Git**, then select **Projects from Git**. Click **Next**.
+4. Select **Clone URI**. Click **Next**.
+5. Paste or enter repository url. On **Authentication** column enter your GitHub username and password. **Next** page!
+6. Select the branches you want. Click **Next**.
+7. Choose a destination folder, default branch and remote name. Click **Next**.
+8. When the clone process is finished select *"Import using the New Project wizard"*. Click **Next**. And press **Finish** to adding project.
+9. Select or type filter text *"Java Project from Existing Ant Buildfile"*. **Next** page!
+10. Click **Browse** to select `build.xml` from destination folder. Also mark *Link to the buildfile in the file system*. Press **Finish**
+  `./libraries` has been automatically imported to *Referenced Libraries*.
+
+DONE! Happy coding <3

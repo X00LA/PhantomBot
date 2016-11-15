@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,7 @@
  */
 (function() {
 
-    var sortType = 'alpha_asc',
-        timeLevel = "",
+    var timeLevel = "",
         keepTimeWhenOffline = "",
         modTimePermToggle = "",
         commandName = "",
@@ -49,6 +48,10 @@
         }
 
         if (panelHasQuery(msgObject)) {
+
+            if (panelCheckQuery(msgObject, 'time_toplist')) {
+                $("#topListAmountTime").attr("placeholder", msgObject['results']['topListAmountTime']).blur();
+            }
  
             if (panelCheckQuery(msgObject, 'time_timezone')) {
                 if (msgObject['results']['timezone'] != undefined) {
@@ -99,37 +102,41 @@
                     username = "",
                     timeValue = "",
                     hrsValue = "",
-                    html = "";
+                    html = "",
+                    pad = function(i) { return (i < 10 ? '0' + i : i) };
 
-                if (panelMatch(sortType, 'time_asc')) {
-                    timeTableData.sort(sortTimeTable_time_asc);
-                } else if (panelMatch(sortType, 'time_desc')) {
-                    timeTableData.sort(sortTimeTable_time_desc);
-                } else if (panelMatch(sortType, 'alpha_asc')) {
-                    timeTableData.sort(sortTimeTable_alpha_asc);
-                } else if (panelMatch(sortType, 'alpha_desc')) {
-                    timeTableData.sort(sortTimeTable_alpha_desc);
-                }
+                $("#userTimeTableTitle").html("User Time Table (Refreshing <i class='fa fa-spinner fa-spin' aria-hidden='true'></i>)");
+                timeTableData.sort(sortTimeTable_alpha_asc);
+                
+                html  = "<table class='tableTime' data-paging='true' data-paging-size='8'" +
+                        "       data-filtering='true' data-filter-delay='200'" +
+                        "       data-sorting='true'" +
+                        "       data-paging-count-format='Rows {PF}-{PL} / {TR}' data-show-header='true'>";
+                html += "<thead><tr>" +
+                        "    <th data-breakpoints='xs'>Username</th>" +
+                        "    <th data-filterable='false' data-type='number'>Time (Secs)</th>" +
+                        "    <th data-filterable='false' data-type='number'>Time (Hrs)</th>" +
+                        "</tr></thead><tbody>";
 
-                html = "<table>";
                 for (var idx = 0; idx < timeTableData.length; idx++) {
                     username = timeTableData[idx]['key'];
                     timeValue = timeTableData[idx]['value'];
-                    hrsValue = "(" + Math.floor(timeValue / 3600) + " hrs)";
-                    html += "<tr class=\"textList\">" +
-                            "    <td style=\"vertical-align: middle; width: 50%\">" + username + "</td>" +
-                            "    <td style=\"vertical-align: middle; width: 25%\">" + timeValue + " " + hrsValue +"</td>" +
-                            "    <td style=\"vertical-align: middle: width: 25%\">" +
-                            "    <form onkeypress=\"return event.keyCode != 13\">" +
-                            "        <input type=\"number\" min=\"0\" id=\"inlineUserTime_" + username + "\"" +
-                            "               placeholder=\"" + timeValue + "\" value=\"" + timeValue + "\"" +
-                            "               style=\"width: 8em\"/>" +
-                            "        <button type=\"button\" class=\"btn btn-default btn-xs\" onclick=\"$.updateUserTime('" + username + "')\"><i class=\"fa fa-pencil\" /></button>" +
-                            "    </form>" +
+                    hrsValue = (Math.floor(timeValue / 3600));
+                
+                    html += "<tr onclick='$.copyUserTime(\""+username+"\", \""+timeValue+"\")' class=\"textList\">" +
+                            "    <td style='width: 50%'>" + username + "</td>" +
+                            "    <td style='width: 25%'>" + timeValue + "</td>" +
+                            "    <td style='width: 25%'>" + hrsValue + "</td>" +
                             "</tr>";
                 }
-                html += "</table>";
-                $("#userTimeTable").html(html);
+                html += "</tbody></table>";
+                
+                setTimeout(function() { 
+                    $('#userTimeTable').html(html);
+                    $('.tableTime').footable({
+                        'on': { 'postdraw.ft.table': function(e, ft) { $("#userTimeTableTitle").html("User Time Table"); } }
+                    });
+                }, TIMEOUT_WAIT_TIME);
                 handleInputFocus();
             }
         }
@@ -140,22 +147,30 @@
      */
     function doQuery() {
         sendDBQuery("time_timezone", "settings", "timezone");
+        sendDBQuery("time_toplist", "settings", "topListAmountTime");
         sendDBKeys("time_settings2", "timeSettings");
         sendDBKeys("time_settings", "timeSettings");
         sendDBKeys("time_timetable", "time");
     }
 
     /**
-     * @function updateUserTime
-     * @param {String} username
+     * @function doLiteQuery
      */
-    function updateUserTime(username) {
-        var timeValue = $("#inlineUserTime_" + username).val();
-        if (timeValue.length > 0) {
-            $("#inlineUserTime_" + username).val('')
-            sendDBUpdate("time_timetableUpdate", "time", username, timeValue);
-            setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
-        }
+    function doLiteQuery() {
+        sendDBQuery("time_timezone", "settings", "timezone");
+        sendDBQuery("time_toplist", "settings", "topListAmountTime");
+        sendDBKeys("time_settings2", "timeSettings");
+        sendDBKeys("time_settings", "timeSettings");
+    }
+
+    /**
+     * @function copyUserTime
+     * @param {String} username
+     * @param {String} time
+     */
+    function copyUserTime(username, time) {
+        $("#adjustUserTimeNameInput").val(username);
+        $("#adjustUserTimeSecsInput").val(time);
     }
 
     /**
@@ -163,17 +178,8 @@
      * @param {Object} a
      * @param {Object} b
      */
-    function sortTimeTable_alpha_desc(a, b) {
-        return panelStrcmp(b.key, a.key);
-    }
     function sortTimeTable_alpha_asc(a, b) {
         return panelStrcmp(a.key, b.key);
-    }
-    function sortTimeTable_time_asc(a, b) {
-        return parseInt(a.value) - parseInt(b.value);
-    }
-    function sortTimeTable_time_desc(a, b) {
-        return parseInt(b.value) - parseInt(a.value);
     }
 
     /**
@@ -206,8 +212,9 @@
                 sendDBUpdate("time_toggles", "timeSettings", setting, "false");
             }
         }
+
         setTimeout(function() { sendCommand("updatetimesettings"); }, TIMEOUT_WAIT_TIME);
-        setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+        setTimeout(function() { doLiteQuery(); }, TIMEOUT_WAIT_TIME);
     }
 
     /**
@@ -219,7 +226,7 @@
             sendDBUpdate("time_toggles", "timeSettings", "timePromoteHours", newTimePromotion);
             $("#setTimePromtionInput").val('');
             $("#setTimePromotionInput").attr("placeholder", "Submitting").blur();
-            setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+            setTimeout(function() { doLiteQuery(); }, TIMEOUT_WAIT_TIME);
         }
     }
 
@@ -232,7 +239,7 @@
             sendDBUpdate("time_toggles", "settings", "timezone", newTimeZone);
             $("#setTimeZoneInput").val('');
             $("#setTimeZoneInput").attr("placeholder", "Submitting").blur();
-            setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+            setTimeout(function() { doLiteQuery(); }, TIMEOUT_WAIT_TIME);
         }
     }
 
@@ -261,8 +268,7 @@
                 sendDBUpdate("times", "time", username, timeAdjust);
             }
         }
-        $("#adjustUserTimeNameInput").val("Submitting");
-        $("#adjustUserTimeSecsInput").val("Submitting");
+        $("#adjustUserTimeNameInput").val("Submitting...");
         setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
         setTimeout(function() {
             $("#adjustUserTimeNameInput").val("");
@@ -271,13 +277,16 @@
     }
 
     /**
-     * @function setTimeSort
-     * @param {String} type
+     * @function topListTime
      */
-    function setTimeSort(type) {
-        sortType = type;
-        doQuery();
-    }
+    function topListTime() {
+        var val = $("#topListAmountTime").val();
+        if (val.length != 0) {
+            sendDBUpdate("time_toplist", "settings", "topListAmountTime", val);
+        }
+        setTimeout(function() { doLiteQuery(); }, TIMEOUT_WAIT_TIME);
+        setTimeout(function() { sendCommand('reloadtop'); }, TIMEOUT_WAIT_TIME);
+    };
 
     // Import the HTML file for this panel.
     $("#timePanel").load("/panel/time.html");
@@ -298,7 +307,7 @@
         var active = $("#tabs").tabs("option", "active");
         if (active == 3 && isConnected && !isInputFocus()) {
             newPanelAlert('Refreshing Time Data', 'success', 1000);
-            doQuery();
+            doLiteQuery();
         }
     }, 3e4);
 
@@ -309,6 +318,6 @@
     $.setTimePromotion = setTimePromotion;
     $.setTimeZone = setTimeZone;
     $.modifyUserTime = modifyUserTime;
-    $.updateUserTime = updateUserTime;
-    $.setTimeSort = setTimeSort;
+    $.copyUserTime = copyUserTime;
+    $.topListTime = topListTime;
 })();

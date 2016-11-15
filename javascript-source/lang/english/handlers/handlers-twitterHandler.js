@@ -1,4 +1,5 @@
-$.lang.register('twitter.tweet', '[Twitter @(twitterid)] $1');
+$.lang.register('twitter.tweet', '[Twitter Feed From @(twitterid)] $1');
+$.lang.register('twitter.tweet.mention', '[Twitter Feed From @(twitterid)] @$1: $2');
 $.lang.register('twitter.usage', 'usage: !twitter [lasttweet | lastmention | lastretweet | set | post | id]');
 $.lang.register('twitter.id', '$1 is on Twitter @$2 [twitter.com/$2]');
 $.lang.register('twitter.usage.id', '(!twitter usage for usage)');
@@ -37,7 +38,7 @@ $.lang.register('twitter.set.message.gamechange.success', 'Set Twitter auto-post
 $.lang.register('twitter.set.message.update.usage', 'usage: !twitter set message update [message]. Tags: (game) (twitchurl) (uptime). Currently: $1');
 $.lang.register('twitter.set.message.update.success', 'Set Twitter auto-post update message to $1');
 $.lang.register('twitter.set.updatetimer.usage', 'usage: !twitter set updatetimer [minutes]. Minimum allowed is 60 minutes to attempt to offset duplicate post rejection from Twitter.');
-$.lang.register('twitter.set.updatetimer.toosmall', 'The minimum allowed value is 60 minutes to attempt to offset duplicate post rejection from Twitter.');
+$.lang.register('twitter.set.updatetimer.toosmall', 'The minimum allowed value is 180 minutes to attempt to offset duplicate post rejection from Twitter.');
 $.lang.register('twitter.set.updatetimer.success', 'Set Twitter updatetimer to $1 minutes.');
 $.lang.register('twitter.post.usage', 'usage: !twitter post [message]');
 $.lang.register('twitter.post.sent', 'Sent to Twitter: $1');

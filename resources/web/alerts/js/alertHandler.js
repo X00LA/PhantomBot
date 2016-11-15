@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,6 +89,7 @@ connection.onmessage = function(e) {
         var imageData = messageObject['alert_image'],
             imageArray,
             imageFile,
+            imageVolume = 0.8,
             imageFileBasename,
             duration;
 
@@ -97,16 +98,20 @@ connection.onmessage = function(e) {
             imageArray = imageData.split(',');
             imageFile = imageArray[0];
             duration = imageArray[1] * 1000;
+            if (imageArray[2] !== undefined) {
+                imageVolume = imageArray[2];
+            }
         } else {
             imageFile = imageData;
             duration = 3000;
         } 
         imageFileBasename = imageFile.substring(0, imageFile.indexOf('.'));
-
+        $("#imageLocation img").attr('src','');
         $("#imageLocation").html('<img src="/alerts/data/' + imageFile + '">').fadeIn(1000);
 
         // If the file doesn't exist a DOM error is tossed to the Console.
         var audioObj = new Audio('/alerts/data/' + imageFileBasename + '.mp3');
+        audioObj.volume = imageVolume;
         audioObj.play();
 
         setTimeout(function() { $("#imageLocation").fadeOut(1000); }, duration);

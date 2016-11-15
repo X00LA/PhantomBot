@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,10 +64,17 @@ public class HTTPServer extends Thread {
         } catch (IOException e) {
             com.gmt2001.Console.err.println("Could not start HTTP server: " + e);
             com.gmt2001.Console.err.logStackTrace(e);
+            /**
+             * @info Shutting down the bot would stop people from having multiple opened.
+             * com.gmt2001.Console.out.println("[ERROR] PhantomBot is now shutting down.");
+             * com.gmt2001.Console.out.println("[ERROR] Close all Java instantace in your TaskManager.");
+             * com.gmt2001.Console.out.println("[ERROR] Or type "!" + PhantomBot.instance().getSession().getNick() + " remove" in your chat.");
+             * System.exit(0);
+             */
             return;
         }
 
-        com.gmt2001.Console.out.println("HTTP server accepting connections on port " + port);
+        com.gmt2001.Console.out.println("HTTP server accepting connections on port: " + port);
 
         while (dorun) {
             try {
@@ -291,11 +298,11 @@ public class HTTPServer extends Thread {
                 com.gmt2001.Console.err.printStackTrace(ex);
             }
         }
-        com.gmt2001.Console.out.println("HTTP server NOT accepting connections on port " + port);
+        com.gmt2001.Console.debug.println("HTTP server NOT accepting connections on port " + port);
     }
 
     public void dispose() {
-        com.gmt2001.Console.out.println("HTTP server closing down on port " + port);
+        com.gmt2001.Console.debug.println("HTTP server closing down on port " + port);
         try {
             dorun = false;
             socket.close();

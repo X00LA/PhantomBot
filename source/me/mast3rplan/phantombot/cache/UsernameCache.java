@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ public class UsernameCache {
 
                 if (user.getBoolean("_success")) {
                     if (user.getInt("_http") == 200) {
-                        String displayName = user.getString("display_name");
+                        String displayName = user.getString("display_name").replaceAll("\\\\s", " ");
                         cache.put(lusername, displayName);
 
                         return displayName;
@@ -117,7 +117,7 @@ public class UsernameCache {
     public void addUser(String userName, String displayName) {
         if (displayName.length() > 0) {
             if (!cache.containsKey(userName)) {
-                cache.put(userName, displayName);
+                cache.put(userName, displayName.replaceAll("\\\\s", " "));
             }
         }
     }

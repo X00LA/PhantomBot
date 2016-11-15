@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -226,13 +226,13 @@ public class ChannelUsersCache implements Runnable {
 
             this.cache = newCache;
 
-            for (String joined : join) {
-                EventBus.instance().post(new IrcChannelJoinUpdateEvent(PhantomBot.instance().getSession(), PhantomBot.instance().getChannel(this.channel), joined));
+            /*for (String joined : join) {
+                EventBus.instance().post(new IrcChannelJoinUpdateEvent(PhantomBot.getSession(this.channel), PhantomBot.getChannel(this.channel), joined));
             }
 
             for (String parted : part) {
-                EventBus.instance().post(new IrcChannelLeaveEvent(PhantomBot.instance().getSession(), PhantomBot.instance().getChannel(this.channel), parted, "Left"));
-            }
+                EventBus.instance().post(new IrcChannelLeaveEvent(PhantomBot.getSession(this.channel), PhantomBot.getChannel(this.channel), parted, "Left"));
+            }*/
 
             firstTime = false;
         }

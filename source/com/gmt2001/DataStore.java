@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,6 +65,9 @@ public class DataStore {
     }
 
     public void SetString(String fName, String section, String key, String value) {
+    }
+
+    public void InsertString(String fName, String section, String key, String value) {
     }
 
     public void SetBatchString(String fName, String section, String[] key, String[] value) {
@@ -219,5 +222,8 @@ public class DataStore {
 
     public Connection CreateConnection(String db, String user, String pass) {
         return null;
+    }
+
+    public void setAutoCommit(boolean mode) {
     }
 }

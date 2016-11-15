@@ -31,13 +31,7 @@
         pointsData = [],
         chatData = [],
         timeoutData = [],
-        followedData = [],
-        countAdmin = 0,
-        countMod = 0,
-        countSub = 0,
-        countReg = 0,
-        countViewer = 0,
-        viewersInDB = false;
+        followedData = [];
 
     var viewerData = {}; // [ user: { group, time, points, lastseen, timeout, followed } ]
 
@@ -53,20 +47,27 @@
             days = 0,
             hours = 0,
             minutes = 0,
-            durationStr = "";
+            durationStr = "",
+            pad = function(i) { return (i < 10 ? '0' + i : i) };
 
         if (seconds > 86400) {    // Day: 60 * 60 * 24
             days = seconds / 86400;
             seconds = seconds % 86400;
-            durationStr += Math.floor(days) + " days ";
+            durationStr += pad(Math.floor(days)) + ":";
+        } else {
+            durationStr += "00:";
         }
+
         if (seconds > 3600) {     // Minutes: 60 * 60
             hours = seconds / 3600;
             seconds = seconds % 3600;
-            durationStr += Math.floor(hours) + " hrs ";
+            durationStr += pad(Math.floor(hours)) + ":";
+        } else {
+            durationStr += "00:";
         }
+
         minutes = seconds / 60;
-        durationStr += Math.floor(minutes) + " mins";
+        durationStr += pad(Math.floor(minutes));
         return durationStr;
     }
 
@@ -112,11 +113,6 @@
                     if (panelCheckQuery(msgObject, 'viewers_groups')) {
                         groupData[key] = value;
                         if (value.indexOf("0") == 0) groupData[key] = "1";
-                        if (value.indexOf("0") == 0 || value.indexOf("1") == 0) countAdmin++;
-                        if (value.indexOf("2") == 0) countMod++;
-                        if (value.indexOf("3") == 0) countSub++;
-                        if (value.indexOf("6") == 0) countReg++;
-                        if (value.indexOf("7") == 0) countViewer++; // Not written to the bot all the time.
                     }
                     if (panelCheckQuery(msgObject, 'viewers_time')) {
                         timeData[key] = value;
@@ -139,7 +135,6 @@
                 }
             }
 
-            viewersInDB = (countViewer > 0);
             loadedGroups = (loadedGroups ? true : panelCheckQuery(msgObject, 'viewers_groups'));
             loadedTime = (loadedTime ? true : panelCheckQuery(msgObject, 'viewers_time'));
             loadedPoints = (loadedPoints ? true : panelCheckQuery(msgObject, 'viewers_points'));
@@ -156,7 +151,6 @@
                     user = usernameData[idx];
 
                     if (groupData[user] == undefined) {
-                        if (!viewersInDB) countViewer++;
                         groupData[user] = "7";
                     }
                     if (!panelIsDefined(pointsData[user])) pointsData[user] = "0";
@@ -176,14 +170,27 @@
                     };
                 }
  
-                htmlHeader = "<table><tr class=\"textList\"><th>User</th><th>Last Seen</th><th>Time in Chat</th>" +
-                             "<th><i class=\"fa fa-money\" /></th><th><i class=\"fa fa-comment\" /></th>" +
-                             "<th><i class=\"fa fa-ban\" /></th><th><i class=\"fa fa-heart\" /></th></tr>";
-                htmlData["1"] = htmlHeader;
-                htmlData["2"] = htmlHeader;
-                htmlData["3"] = htmlHeader;
-                htmlData["6"] = htmlHeader;
-                htmlData["7"] = htmlHeader;                
+                htmlHeader = "<table class='CLASS_STRING' data-paging='true' data-paging-size='8'" +
+                             "       data-filtering='true' data-filter-delay='200'" +
+                             "       data-sorting='true'" +
+                             "       data-paging-count-format='Rows {PF}-{PL} / {TR}' data-show-header='true'>" +
+                             "<thead><tr>" +
+                             "    <th data-breakpoints='xs'>User</th>" +
+                             "    <th data-type='Date'>Last Seen</th>" +
+                             "    <th data-type='Date'>Time in Chat</th>" +
+                             "    <th data-type='number'><i class='fa fa-money' /></th>" +
+                             "    <th data-type='number'><i class='fa fa-comment' /></th>" +
+                             "    <th data-type='number'><i class='fa fa-ban' /></th>" +
+                             "    <th>&hearts;</th>" +
+                             "</tr></thead><tbody>";
+
+
+                htmlData["1"] = htmlHeader.replace('CLASS_STRING', 'table_1');
+                htmlData["2"] = htmlHeader.replace('CLASS_STRING', 'table_2');
+                htmlData["3"] = htmlHeader.replace('CLASS_STRING', 'table_3');
+                htmlData["4"] = htmlHeader.replace('CLASS_STRING', 'table_4');
+                htmlData["6"] = htmlHeader.replace('CLASS_STRING', 'table_6');
+                htmlData["7"] = htmlHeader.replace('CLASS_STRING', 'table_7'); 
 
                 for (var user in viewerData) {
                     htmlData[viewerData[user].group.toString()] +=
@@ -197,38 +204,47 @@
                         htmlData[viewerData[user].group.toString()] +=
                             "    <td>" + viewerData[user].chat + "</td>" +
                             "    <td>" + viewerData[user].timeout + "</td>";
-                    }
-                    if (panelStrcmp(viewerData[user].followed, 'true') === 0) {
-                        htmlData[viewerData[user].group.toString()] +=
-                            "    <td><i class=\"fa fa-heart\" /></td>";
                     } else {
                         htmlData[viewerData[user].group.toString()] +=
-                            "    <td><i class=\"fa fa-heart-o\" /></td>";
+                            "    <td>0</td>" +
+                            "    <td>0</td>";
+                    }
+
+                    if (panelStrcmp(viewerData[user].followed, 'true') === 0) {
+                        htmlData[viewerData[user].group.toString()] +=
+                            "    <td>&hearts;</td>";
+                    } else {
+                        htmlData[viewerData[user].group.toString()] +=
+                            "    <td>&nbsp;</td>";
                     }
     
                     htmlData[viewerData[user].group.toString()] += "</tr>";
                 }
 
-                htmlData["1"] += "</table>";
-                htmlData["2"] += "</table>";
-                htmlData["3"] += "</table>";
-                htmlData["6"] += "</table>";
-                htmlData["7"] += "</table>";                
+                htmlData["1"] += "</tbody></table>";
+                htmlData["2"] += "</tbody></table>";
+                htmlData["3"] += "</tbody></table>";
+                htmlData["4"] += "</tbody></table>";
+                htmlData["6"] += "</tbody></table>";
+                htmlData["7"] += "</tbody></table>";                
 
                 $("#viewersAdminList").html(htmlData["1"]);
-                $("#viewersAdminCount").html("(Count: " + countAdmin + ")");
+                $('.table_1').footable();
 
                 $("#viewersModList").html(htmlData["2"]);
-                $("#viewersModCount").html("(Count: " + countMod + ")");
+                $('.table_2').footable();
 
                 $("#viewersSubList").html(htmlData["3"]);
-                $("#viewersSubCount").html("(Count: " + countSub + ")");
+                $('.table_3').footable();
+
+                $("#viewersDonatorList").html(htmlData["4"]);
+                $('.table_4').footable();
 
                 $("#viewersRegList").html(htmlData["6"]);
-                $("#viewersRegCount").html("(Count: " + countReg + ")");
+                $('.table_6').footable();
 
                 $("#viewersViewerList").html(htmlData["7"]);
-                $("#viewersViewerCount").html("(Count: " + countViewer + ")");
+                $('.table_7').footable();
 
                 // Reset everything back now that the data displayed //
                 loadedGroups = false;
@@ -246,12 +262,6 @@
                 chatData = [];
                 timeoutData = [];
                 followedData = [];
-                countAdmin = 0;
-                countMod = 0;
-                countSub = 0;
-                countReg = 0;
-                countViewer = 0;
-                viewersInDB = false;
             }
         }
     } 
@@ -270,6 +280,13 @@
             sendDBKeys("viewers_timeout", "panelmoduserstats");
             sendDBKeys("viewers_chat", "panelchatuserstats");
         }
+
+        $("#viewersAdminList").html("Refreshing Data <i class='fa fa-spinner fa-spin' aria-hidden='true'></i>");
+        $("#viewersModList").html("Refreshing Data <i class='fa fa-spinner fa-spin' aria-hidden='true'></i>");
+        $("#viewersSubList").html("Refreshing Data <i class='fa fa-spinner fa-spin' aria-hidden='true'></i>");
+        $("#viewersDonatorList").html("Refreshing Data <i class='fa fa-spinner fa-spin' aria-hidden='true'></i>");
+        $("#viewersRegList").html("Refreshing Data <i class='fa fa-spinner fa-spin' aria-hidden='true'></i>");
+        $("#viewersViewerList").html("Refreshing Data <i class='fa fa-spinner fa-spin' aria-hidden='true'></i>");
     }
 
     /**
@@ -292,28 +309,32 @@
         if (username.length != 0) {
             if (perm == 'Admin') {
                 sendDBUpdate('user_perm', 'group', username.toLowerCase(), '1');
+                sendCommand('permissionsetuser ' + username.toLowerCase() + ' 1');
             }
     
             if (perm == 'Mod') {
                 sendDBUpdate('user_perm', 'group', username.toLowerCase(), '2');
+                sendCommand('permissionsetuser ' + username.toLowerCase() + ' 2');
             }
     
             if (perm == 'Sub') {
                 sendDBUpdate('user_perm', 'group', username.toLowerCase(), '3');
+                sendCommand('permissionsetuser ' + username.toLowerCase() + ' 3');
             }
     
-            /*
-            ** Will enabled once we use these groups.
             if (perm == 'Donator') {
                 sendDBUpdate('user_perm', 'group', username.toLowerCase(), '4');
+                sendCommand('permissionsetuser ' + username.toLowerCase() + ' 4');
             }
-    
+
+            /*
             if (perm == 'Hoster') {
                 sendDBUpdate('user_perm', 'group', username.toLowerCase(), '5');
             }*/
     
             if (perm == 'Reg') {
                 sendDBUpdate('user_perm', 'group', username.toLowerCase(), '6');
+                sendCommand('permissionsetuser ' + username.toLowerCase() + ' 6');
             }
         }
 
@@ -328,6 +349,7 @@
         var username = $("#unPromoteUser" + perm).val();
         if (username.length != 0) {
             sendDBDelete('user_perm', 'group', username.toLowerCase());
+            sendCommand('permissionsetuser ' + username.toLowerCase() + ' 7');
         }
         $("#unPromoteUser" + perm).val('');
         doQuery();
@@ -360,6 +382,7 @@
     }, INITIAL_WAIT_TIME);
 
     // Query the DB every 30 seconds for updates.
+/*
     setInterval(function() {
         var active = $("#tabs").tabs("option", "active");
         if (active == 5 && isConnected && !isInputFocus()) {
@@ -367,6 +390,7 @@
             doQuery();
         }
     }, 3e4);
+*/
 
     // Export functions - Needed when calling from HTML.
     $.viewersOnMessage = onMessage;

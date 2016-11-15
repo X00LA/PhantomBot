@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,21 +83,17 @@
                 for (var idx in msgObject['results']) {
                     id = msgObject['results'][idx]['key'].match(/message_(\d+)/)[1];
                     html += '<tr style="textList">' +
-                            '    <td style="width: 25px">' +
-                            '        <div id="deleteNotice_' + id + '" class="button"' +
-                            '             onclick="$.deleteNotice(\'' + id + '\')"><i class="fa fa-trash" />' +
-                            '        </div>' +
-                            '    </td>' +
-                            '    <td style="vertical-align: middle">' +
-                            '        <form onkeypress="return event.keyCode != 13">' +
-                            '            <input style="width: 90%" type="text" id="inlineNoticeEdit_' + id + '"' +
-                            '                   value="' + msgObject['results'][idx]['value'] + '" />' +
-                            '            <button type="button" class="btn btn-default btn-xs"' +
-                            '                   onclick="$.updateNotice(\'' + id + '\')"><i class="fa fa-pencil" />' +
-                            '            </button>' +
-                            '        </form>' +
-                            '    </td>' +
-                            '</tr>';
+                    '    <td style="width: 15%">Notice #' + id + '</td>' +
+                    '    <td style="vertical-align: middle">' +
+                    '        <form onkeypress="return event.keyCode != 13">' +
+                    '            <input style="width: 80%" type="text" id="inlineNoticeEdit_' + id + '"' +
+                    '                   value="' + msgObject['results'][idx]['value'] + '" />' +
+                    '              <button type="button" class="btn btn-default btn-xs" onclick="$.updateNotice(\'' + id + '\')"><i class="fa fa-pencil" /> </button> ' +
+                    '              <button type="button" class="btn btn-default btn-xs" id="deleteNotice_' + id + '" onclick="$.deleteNotice(\'' + id + '\')"><i class="fa fa-trash" /> </button>' +
+                    '             </form>' +
+                    '        </form>' +
+                    '    </td>' +
+                    '</tr>';
                 }
                 html += '</table>';
                 $('#noticeList').html(html);
@@ -172,8 +168,9 @@
      * @function addNotice
      */
     function addNotice() {
-        var value = $('#addNoticeInput').val();
+        var value = $('#addNoticeInput').val().replace(/\"/g, '%22');
         if (value.length > 0) {
+            value = value.replace(/%22/g, '\'\'');
             sendCommand('notice addsilent ' + value);
             $('#addNoticeInput').val('');
             setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);    

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,10 +60,10 @@
                     id = msgObject['results'][idx]['key'];
                     quoteData = JSON.parse(msgObject['results'][idx]['value']);
                     quoteDataClean = JSON.parse(msgObject['results'][idx]['value']);
-                    quoteDataClean[1] = quoteDataClean[1].replace(/,/g, '%2C');
+                    quoteDataClean[1] = quoteDataClean[1].replace(/,/g, '%2C').replace(/'/g, '%27');
                     html += '<tr style="textList">' +
                             '    <td rowspan="2" style="width: 25px">' +
-                            '        <div id="deleteQuote_' + id + '" class="button"' +
+                            '        <div id="deleteQuote_' + id + '" type=\"button\" class=\"btn btn-default btn-xs\"' +
                             '             onclick="$.deleteQuote(\'' + id + '\')"><i class="fa fa-trash" />' +
                             '        </div>' +
                             '    </td>' +
@@ -148,7 +148,7 @@
     function deleteQuote(id) {
         $('#deleteQuote_' + id).html(spinIcon);
         sendCommand('delquotesilent ' + id);
-        setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME * 4);
+        setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
     }
 
     /**
@@ -162,14 +162,14 @@
             quoteArray = quoteData.split(',');
         if (value.length > 0) {
             if (panelMatch(field, 'quote')) {
-                quoteArray[1] = value;
+                quoteArray[1] = value
             }
             if (panelMatch(field, 'game')) {
-                quoteArray[1] = quoteArray[1].replace(/%2C/g, ',');
+                quoteArray[1] = quoteArray[1].replace(/%2C/g, ',').replace(/%27/g, '\'');
                 quoteArray[3] = value;
             }
             if (panelMatch(field, 'user')) {
-                quoteArray[1] = quoteArray[1].replace(/%2C/g, ',');
+                quoteArray[1] = quoteArray[1].replace(/%2C/g, ',').replace(/%27/g, '\'');
                 quoteArray[0] = value;
             }
             sendDBUpdate('quotes_update', 'quotes', id, JSON.stringify(quoteArray));
@@ -188,8 +188,16 @@
             setTimeout(function() { doQuery(); $('#addQuoteInput').val(''); }, TIMEOUT_WAIT_TIME * 4);
         }
     }
-    
 
+    /**
+     * @function delQuoteMsg
+     */
+    function delQuoteMsg() {
+        sendDBDelete('quotes_quotemessage', 'settings', 'quoteMessage');
+        $('#quoteMessageInput').val('');
+        setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME * 4);
+    }
+    
     // Import the HTML file for this panel.
     $("#quotesPanel").load("/panel/quotes.html");
 
@@ -220,4 +228,5 @@
     $.updateQuote = updateQuote;
     $.addQuote = addQuote;
     $.setQuoteMessage = setQuoteMessage;
+    $.delQuoteMsg = delQuoteMsg;
 })();

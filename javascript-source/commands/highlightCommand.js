@@ -10,12 +10,13 @@
         var command = event.getCommand(),
             sender = event.getSender(),
             args = event.getArgs(),
+            action = args[0],
             hours,
             minutes,
             timestamp,
-            output_msg,
             keys,
             localDate,
+            arr,
             streamUptimeMinutes;
 
         /**
@@ -45,7 +46,7 @@
             localDate = getCurLocalTimeString("'['dd-MM-yyyy']'");
             $.inidb.set('highlights', timestamp, localDate + ' ' + args.splice(0).join(' '));
             $.say($.whisperPrefix(sender) + $.lang.get('highlightcommand.highlight.success', timestamp));
-            $.log.event(sender + ' added a highlight at ' + timestamp + '.');
+            $.log.event(sender + ' added a highlight at ' + timestamp);
         }
 
         if (command.equalsIgnoreCase("gethighlights") || command.equalsIgnoreCase("showhighlights")) {
@@ -54,20 +55,20 @@
                 return;
             }
 
-            output_msg = "";
             keys = $.inidb.GetKeyList('highlights', '');
+            arr = [];
             for (var i = keys.length - 1; i >= 0; i--) {
-                output_msg = output_msg + "[ " + keys[i] + " > " + $.inidb.get("highlights", keys[i]) + " ] ";
+                arr.push("[" + keys[i] + " > " + $.inidb.get("highlights", keys[i]) + "] ");
             }
-            $.say($.whisperPrefix(sender) + "Highlights: " + output_msg);
-            return;
+
+            $.paginateArray(arr, 'highlightcommand.highlights', ' ', true, sender);
         }
 
         if (command.equalsIgnoreCase("clearhighlights")) {
             $.inidb.RemoveFile("highlights");
             $.inidb.ReloadFile("highlights");
             $.say($.whisperPrefix(sender) + $.lang.get('highlightcommand.clearhighlights.success'));
-            $.log.event(sender + ' cleared the highlights.');
+            $.log.event(sender + ' cleared highlights');
             return;
         }
     });
@@ -75,6 +76,7 @@
     $.bind('initReady', function() {
         if ($.bot.isModuleEnabled('./commands/highlightCommand.js')) {
             $.registerChatCommand('./commands/highlightCommand.js', 'highlight', 2);
+            
             $.registerChatCommand('./commands/highlightCommand.js', 'gethighlights', 2);
             $.registerChatCommand('./commands/highlightCommand.js', 'showhighlights', 2);
             $.registerChatCommand('./commands/highlightCommand.js', 'clearhighlights', 1);

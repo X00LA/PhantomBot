@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,8 @@
  */
 (function() {
 
-    var streamOnline = false,
+    var chatHeight = 0,
+        streamOnline = false,
         whisperMode = false,
         responseMode = false,
         meMode = false,
@@ -187,6 +188,38 @@
                     $('#streamTitleInput').val(msgObject['results']['title']);
                 }
             }
+
+            if (panelCheckQuery(msgObject, 'dashboard_streamlastfollow')) {
+                if (msgObject['results']['lastFollow'] == null) {
+                    $("#lastFollow").html("");
+                } else {
+                    $("#lastFollow").html("<spam class=\"purplePill\">Latest Follow: " + msgObject['results']['lastFollow'] + "</spam>");
+                }
+            }
+
+            if (panelCheckQuery(msgObject, 'dashboard_streamlastresub')) {
+                if (msgObject['results']['lastReSub'] == null) {
+                    $("#lastReSub").html("");
+                } else {
+                    $("#lastReSub").html("<spam class=\"purplePill\">Latest ReSub: " + msgObject['results']['lastReSub'] + "</spam>");
+                }
+            }
+
+            if (panelCheckQuery(msgObject, 'dashboard_streamlastsub')) {
+                if (msgObject['results']['lastSub'] == null) {
+                    $("#lastSub").html("");
+                } else {
+                    $("#lastSub").html("<spam class=\"purplePill\">Latest Sub: " + msgObject['results']['lastSub'] + "</spam>");
+                }
+            }
+
+            if (panelCheckQuery(msgObject, 'dashboard_streamlastdonator')) {
+                if (msgObject['results']['lastDonator'] == null) {
+                    $("#lastDonator").html("");
+                } else {
+                    $("#lastDonator").html("<spam class=\"purplePill\">Latest Donator: " + msgObject['results']['lastDonator'] + "</spam>");
+                }
+            }
  
             if (panelCheckQuery(msgObject, 'dashboard_gameTitle')) {
                 gameTitle = msgObject['results']['game'];
@@ -216,7 +249,6 @@
             if (panelCheckQuery(msgObject, 'dashboard_deathctr')) {
                 amount = msgObject['results'][gameTitle];
                 if (gameTitle === undefined || gameTitle === null || amount === null || amount === undefined) {
-                    sendDBUpdate('dashboard_deathctr', 'deaths', gameTitle, "0");
                     $("#deathCounterValue").html(msgObject['results'][gameTitle]);
                 }
                 $("#deathCounterValue").html(msgObject['results'][gameTitle]);
@@ -249,6 +281,23 @@
             if (panelCheckQuery(msgObject, 'dashboard_logRotate')) {
                 $('#logRotateInput').val(msgObject['results']['log_rotate_days']);
             }
+
+            if (panelCheckQuery(msgObject, 'dashboard_queuelist')) {
+                var queueList = msgObject['results'],
+                    html = "",
+                    username = "";
+
+                html = "<table>";
+                for (var idx = 0; idx < queueList.length; idx++) {
+                    username = queueList[idx]['key'];
+                    html += "<tr class=\"textList\">" +
+                            "    <td style=\"vertical-align: middle; width: 50%\">" + username + "</td>" +
+                            "    <td style=\"vertical-align: middle width: 25%\">" +
+                            "</tr>";
+                }
+                html += "</table>";
+                $("#queueList").html(html);
+            }
         }
     }
 
@@ -257,6 +306,10 @@
      */
     function doQuery() {
         sendDBQuery("dashboard_streamTitle", "streamInfo", "title");
+        sendDBQuery("dashboard_streamlastfollow", "streamInfo", "lastFollow");
+        sendDBQuery("dashboard_streamlastresub", "streamInfo", "lastReSub");
+        sendDBQuery("dashboard_streamlastsub", "streamInfo", "lastSub");
+        sendDBQuery("dashboard_streamlastdonator", "streamInfo", "lastDonator");
         sendDBQuery("dashboard_gameTitle", "streamInfo", "game");
         sendDBQuery("dashboard_loggingModeEvent", "settings", "log.event");
         sendDBQuery("dashboard_loggingModeFile", "settings", "log.file");
@@ -268,6 +321,7 @@
         sendDBQuery("dashboard_deathctr", "deaths", gameTitle);
         sendDBKeys("dashboard_highlights", "highlights");
         sendDBKeys("dashboard_modules", "modules");
+        sendDBKeys("dashboard_queuelist", "queueList");
 
         if (!panelStatsEnabled) {
             sendDBQuery("dashboard_panelStatsEnabled", "panelstats", "enabled");
@@ -385,7 +439,7 @@
     function setStreamTitle() {
         var newTitle = $("#streamTitleInput").val();
         if (newTitle.length > 0) {
-            sendCommand("title setsilent " + newTitle);
+            sendCommand("settitlesilent " + newTitle);
             $("#streamTitleInput").val(newTitle);
         }
     }
@@ -396,7 +450,7 @@
     function setGameTitle() {
         var newGame = $("#gameTitleInput").val();
         if (newGame.length > 0) {
-            sendCommand("game setsilent " + newGame);
+            sendCommand("setgamesilent " + newGame);
             $("#gameTitleInput").val(newGame);
             gameTitle = newGame;
         }
@@ -421,7 +475,7 @@
      */
     function setHighlight() {
         $("#showHighlights").html("<i style=\"color: #6136b1\" class=\"fa fa-spinner fa-spin\" />");
-        sendCommand("highlight " + $("#highlightInput").val());
+        sendCommand("highlightpanel " + $("#highlightInput").val());
         $("#highlightInput").val('');
         setTimeout(function() { sendDBKeys("dashboard_highlights", "highlights"); }, TIMEOUT_WAIT_TIME);
     }
@@ -430,7 +484,7 @@
      * @function clearHighlights
      */
     function clearHighlights() {
-        $("#showHighlights").html("<i style=\"color: #6136b1\" class=\"fa fa-spinner fa-spin\" />");
+        $("#showHighlightspanel").html("<i style=\"color: #6136b1\" class=\"fa fa-spinner fa-spin\" />");
         sendCommand("clearhighlights");
         setTimeout(function() { sendDBKeys("dashboard_highlights", "highlights"); }, TIMEOUT_WAIT_TIME);
     }
@@ -441,7 +495,7 @@
     function setMultiLink(tagId, tableKey) {
         var newValue = $(tagId).val();
         if (newValue.length > 0) {
-            sendDBUpdate('multiLinkInput', 'dualStreamCommand', tableKey, '/' + newValue.replace(/\s+/g, '/'));
+            sendDBUpdate('multiLinkInput', 'dualStreamCommand', tableKey, newValue.replace(/\s+/g, '/'));
             $(tagId).val('')
             $(tagId).attr("placeholder", newValue).blur();
             setTimeout(function() { sendCommand("reloadmulti"); }, TIMEOUT_WAIT_TIME);
@@ -535,8 +589,11 @@
     function toggleTwitchChatRollup() {
         if ($("#chat").is(":visible")) {
             $(function() { $("#chatsidebar").resizable('disable'); });
+            chatHeight = $("#chatsidebar").height();
             $("#chat").fadeOut(1000);
+            setTimeout(function() { $("#chatsidebar").height(20); }, 1000);
         } else {
+            $("#chatsidebar").height(chatHeight);
             $("#chat").fadeIn(1000);
             $(function() { $("#chatsidebar").resizable('enable'); });
         }

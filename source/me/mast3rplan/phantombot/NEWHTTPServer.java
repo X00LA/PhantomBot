@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,7 +71,9 @@ public class NEWHTTPServer {
             server.start();
         } catch (IOException ex) {
             com.gmt2001.Console.err.println("Failed to create HTTP Server: " + ex.getMessage());
+            com.gmt2001.Console.warn.println("PhantomBot will now shutdown. Close all Java instances to fix this.");
             com.gmt2001.Console.err.logStackTrace(ex);
+            System.exit(0);
         } catch (Exception ex) {
             com.gmt2001.Console.err.println("Failed to create HTTP Server: " + ex.getMessage());
             com.gmt2001.Console.err.logStackTrace(ex);
@@ -183,6 +185,19 @@ public class NEWHTTPServer {
                 myHdrMessage = headers.getFirst("message");
             }
 
+            // Check the uriQueryList for the webauth
+            if (uriQuery != null) {
+                for (String query : uriQueryList) {
+                    if (query.startsWith("webauth=")) {
+                        String[] webAuthData = query.split("=");
+                        myPassword = webAuthData[1];
+                        if (myPassword.equals(serverWebAuth)) {
+                            hasPassword = true;
+                        }
+                    }
+                }
+            }
+
             if (requestMethod.equals("GET")) {
                 if (uriPath.startsWith("/inistore")) {
                     handleIniStore(uriPath, exchange, hasPassword);
@@ -235,6 +250,10 @@ public class NEWHTTPServer {
 
         for (String uriQuery : uriQueryList) {
             keyValue = uriQuery.split("=");
+
+            if (keyValue[0].equals("webauth")) {
+                continue;
+            }
 
             if (keyValue[0].equals("table")) {
                 if (keyValue[1] == null) {
@@ -418,8 +437,11 @@ public class NEWHTTPServer {
             return;
         }
 
-        EventBus.instance().post(new IrcChannelMessageEvent(PhantomBot.instance().getSession(),
-                                 user, message, PhantomBot.instance().getChannel()));
+        if (message.startsWith("!")) {
+            PhantomBot.instance().handleCommand(user, message.substring(1));
+        } else {
+            PhantomBot.instance().getSession().say(message);
+        }
         sendData("text/text", "event posted", exchange);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ public class in {
         String s = br.readLine();
 
         if (PhantomBot.enableDebugging) {
-            Logger.instance().log(Logger.LogType.Input, logTimestamp.log() + " " + s);
+            Logger.instance().log(Logger.LogType.Input, "[" + logTimestamp.log() + "] " + s);
             Logger.instance().log(Logger.LogType.Input, "");
         }
 

@@ -12,8 +12,13 @@
         perUserCooldown = $.getSetIniDbBoolean('cooldown', 'perUserCooldown', false),
         globalCooldownTime = $.getSetIniDbNumber('cooldown', 'globalCooldownTime', 90),
         modCooldown = $.getSetIniDbBoolean('cooldown', 'modCooldown', false),
-        cooldown = [];
+        cooldown = [],
+        cooldowns = [],
+        i;
 
+    /**
+     * @function reloadCooldown 
+     */
     function reloadCooldown () {
         globalCooldown = $.getIniDbBoolean('cooldown', 'globalCooldown');
         perUserCooldown = $.getIniDbBoolean('cooldown', 'perUserCooldown');
@@ -21,141 +26,150 @@
         globalCooldownTime = $.getIniDbNumber('cooldown', 'globalCooldownTime');
     };
 
-    function set(command, time, user) {
-        if (time == null || time == 0 || time == 1 || isNaN(time)) {
+    /**
+     * @function permCheck 
+     * @param username
+     * @return boolean
+     */
+    function permCheck(username, isMod) {
+        return (!modCooldown && isMod) || $.isAdmin(username);
+    };
+
+     /**
+     * @function commandCheck 
+     * @param command
+     * @return boolean
+     */
+    function commandCheck(cmd) {
+        return (cmd.equals('bet') || cmd.equals('ticket') || cmd.equals('tickets') || cmd.equals('bid') || cmd.equals($.inidb.get('raffle', 'command')) || cmd.equals('adventure'));
+    };
+
+    /**
+     * @function getCooldown 
+     * @param command
+     * @return number
+     */
+    function getCooldown(command) {
+        if ($.inidb.exists('cooldown', command.toLowerCase())) {
+            return parseInt($.inidb.get('cooldown', command.toLowerCase()));
+        }
+        return 0;
+    };
+
+    /**
+     * @function set 
+     * @export $.coolDown
+     * @param command
+     * @param time
+     * @param username
+     */
+    function set(command, hasCooldown, time, username) {
+        if (time === null || time === 0) {
             return;
         }
 
-        time = (time * 1000) + $.systemTime();
+        time = ((time * 1000) + $.systemTime());
+        command = command.toLowerCase();
 
-        if (!command.equalsIgnoreCase('adventure')) {
-            if (globalCooldown && !$.inidb.exists('cooldown', command)) {
-                cooldown.push({
-                    command: command,
-                    time: time,
-                });
+        if (!command.equals('adventure')) {
+            if (globalCooldown && !hasCooldown) {
+                cooldown[command] = {time: time};
                 $.consoleDebug('Pushed command !' + command + ' to global cooldown.');
                 return;
-            }
-    
-            if (perUserCooldown && $.inidb.exists('cooldown', command)) {
-                cooldown.push({
-                    command: command,
-                    time: time,
-                    user: user,
-                });
-                $.consoleDebug('Pushed command !' + command + ' to user cooldown.');
-                return;
+            } else {
+                if (perUserCooldown) {
+                    cooldowns.push({username: username, time: time, command: command});
+                    $.consoleDebug('Pushed command !' + command + ' to user cooldown with username: ' + username + '.');
+                    return;
+                }
             }
         }
 
-        if ($.inidb.exists('cooldown', command) || command.equalsIgnoreCase('adventure')) {
-            cooldown.push({
-                command: command,
-                time: time,
-            });
-            $.consoleDebug('Pushed command !' + command + ' to cooldown.');
-        }
+        cooldown[command] = {time: time};
+        $.consoleDebug('Pushed command !' + command + ' to cooldown.');
     };
 
-    function get(command, user) {
-        var coolDownExists = $.inidb.exists('cooldown', command),
-            cool,
-            i;
+     /**
+     * @function get 
+     * @export $.coolDown
+     * @param command
+     * @param username
+     * @return number
+     */
+    function get(command, username, isMod) {
+        var hasCooldown = $.inidb.exists('cooldown', command.toLowerCase());
 
-        if (command.equalsIgnoreCase('bet') || command.equalsIgnoreCase('ticket') || command.equalsIgnoreCase('tickets') 
-            || command.equalsIgnoreCase('bid') || command.equalsIgnoreCase($.inidb.get('raffle', 'command'))) {
-            return;
-        }
-
-        if (globalCooldown && !coolDownExists) {
-            for (i in cooldown) {
-                if (cooldown[i].command.equalsIgnoreCase(command)) {
-                    cool = cooldown[i].time - $.systemTime();
-                    if (cool > 0) {
-                        if ((!modCooldown && $.isMod(user)) || $.isAdmin(user)) {
-                            return 0;
-                        }
-                        return parseInt(cool);
-                    } else {
-                        cooldown.splice(i, 1);
+        if (commandCheck(command.toLowerCase())) {
+            if (command.equals('adventure')) {
+                if (cooldown[command] !== undefined) {
+                    if (cooldown[command].time - $.systemTime() >= 0) {
+                        return parseInt(cooldown[command].time - $.systemTime());
                     }
                 }
             }
-            if (!command.equalsIgnoreCase('adventure')) {
-                set(command, globalCooldownTime);
-            }
-            return;
+            return 0;
         }
 
-        if (perUserCooldown && coolDownExists) {
-            for (i in cooldown) {
-                if (cooldown[i].command.equalsIgnoreCase(command) && cooldown[i].user.equalsIgnoreCase(user)) {
-                    cool = cooldown[i].time - $.systemTime();
-                     if (cool > 0) {
-                        if ((!modCooldown && $.isMod(user)) || $.isAdmin(user)) {
-                            return 0;
-                        } 
-                        return parseInt(cool);
-                    } else {
-                        cooldown.splice(i, 1);
-                    }
+        if (globalCooldown && !hasCooldown) {
+            if (cooldown[command] !== undefined) {
+                if (cooldown[command].time - $.systemTime() >= 0) {
+                    if (permCheck(username, isMod)) return 0;
+                    return parseInt(cooldown[command].time - $.systemTime());
                 }
             }
-            if (!command.equalsIgnoreCase('adventure')) {
-                set(command, parseInt($.inidb.get('cooldown', command)), user);
+            set(command, hasCooldown, globalCooldownTime); return 0;
+        } else {
+            if (perUserCooldown && hasCooldown) {
+                for (i in cooldowns) {
+                    if (cooldowns[i].command.equals(command) && cooldowns[i].username.equals(username) && cooldowns[i].time - $.systemTime() >= 0) {
+                        if (permCheck(username, isMod)) return 0;
+                        return parseInt(cooldowns[i].time - $.systemTime());
+                    }
+                }
+                set(command, hasCooldown, getCooldown(command), username); return 0;
             }
-            return;
         }
 
-        for (i in cooldown) {
-            if (cooldown[i].command.equalsIgnoreCase(command)) {
-                cool = cooldown[i].time - $.systemTime();
-                if (cool > 0) {
-                    if ((!modCooldown && $.isMod(user)) || $.isAdmin(user)) {
-                        return 0;
-                    }
-                    return parseInt(cool);
-                } else {
-                    cooldown.splice(i, 1);
-                }
+        if (cooldown[command] !== undefined) {
+            if (cooldown[command].time - $.systemTime() >= 0) {
+                if (permCheck(username, isMod)) return 0;
+                return parseInt(cooldown[command].time - $.systemTime());
             }
         }
-        if (coolDownExists) {
-            set(command, parseInt($.inidb.get('cooldown', command)));
-        }
+        set(command, hasCooldown, getCooldown(command)); return 0;
     };
 
+    /**
+     * @function clear 
+     * @export $.coolDown
+     * @param command
+     */
     function clear(command) {
-        var i;
-        for (i in cooldown) {
-            if (cooldown[i].command.equalsIgnoreCase(command)) {
-                cooldown.splice(i, 1);
-                return;
-            }
-        }
+        delete cooldown[command];
+    };
+
+    /**
+     * @function clearAll
+     */
+    function clearAll() {
+        cooldown = [];
     };
 
     /**
      * @event command
      */
     $.bind('command', function(event) {
-        var sender = event.getSender().toLowerCase(),
+        var sender = event.getSender(),
             command = event.getCommand(),
             args = event.getArgs(),
             cmd = args[0],
             time = parseInt(args[1]);
 
         /**
-         * @commandpath coolcom [command or keyword] [seconds] - Sets a cooldown in seconds for a command or a keyword. Use -1 for seconds to remove it. This also applies for the per-user cooldown.
+         * @commandpath coolcom [command] [seconds] - Sets a cooldown in seconds for a command. Use -1 for seconds to remove it. This also applies for the per-user cooldown.
          */
         if (command.equalsIgnoreCase('coolcom') || command.equalsIgnoreCase('cooldown')) {
-            if (!$.isAdmin(sender)) {
-                $.say($.whisperPrefix(sender) + $.adminMsg);
-                return;
-            }
-
-            if (!cmd || !time) {
+            if (cmd === undefined || isNaN(time)) {
                 $.say($.whisperPrefix(sender) + $.lang.get('cooldown.set.usage'));
                 return;
             }
@@ -175,40 +189,33 @@
                 }
             } else {
                 if (time == -1) {
-                    $.inidb.del('cooldown', cmd);
+                    $.inidb.del('cooldown', cmd.toLowerCase());
                     clear(cmd);
                     $.say($.whisperPrefix(sender) + $.lang.get('cooldown.removed', cmd));
                 } else {
-                    $.inidb.set('cooldown', cmd, time);
+                    clear(cmd);
+                    $.inidb.set('cooldown', cmd.toLowerCase(), time);
                     $.say($.whisperPrefix(sender) + $.lang.get('cooldown.set', cmd, time));
                 }
             }
         }
 
         /**
-         * @commandpath toggleglobalcooldown - Enables/Disables the global command cooldown.
+         * @commandpath toggleglobalcooldown - Enables or Disables the global command cooldown.
          */
         if (command.equalsIgnoreCase('toggleglobalcooldown')) {
-            if (!$.isAdmin(sender)) {
-                $.say($.whisperPrefix(sender) + $.adminMsg);
-                return;
-            }
-
             globalCooldown = !globalCooldown;
+            clearAll();
             $.setIniDbBoolean('cooldown', 'globalCooldown', globalCooldown);
             $.say($.whisperPrefix(sender) + $.lang.get('cooldown.global.toggle', (globalCooldown ? $.lang.get('common.enabled') : $.lang.get('common.disabled'))));
         }
 
         /**
-         * @commandpath toggleperusercooldown - Enables/Disables the per-user command cooldown.
+         * @commandpath toggleperusercooldown - Enables or Disables the per-user command cooldown.
          */
         if (command.equalsIgnoreCase('toggleperusercooldown')) {
-            if (!$.isAdmin(sender)) {
-                $.say($.whisperPrefix(sender) + $.adminMsg);
-                return;
-            }
-
             perUserCooldown = !perUserCooldown;
+            clearAll();
             $.setIniDbBoolean('cooldown', 'perUserCooldown', perUserCooldown);
             $.say($.whisperPrefix(sender) + $.lang.get('cooldown.per.user.toggle', (perUserCooldown ? $.lang.get('common.enabled') : $.lang.get('common.disabled'))));
         }
@@ -217,29 +224,19 @@
          * @commandpath globalcooldowntime [seconds] - Sets the global cooldown time in seconds.
          */
         if (command.equalsIgnoreCase('globalcooldowntime')) {
-            if (!$.isAdmin(sender)) {
-                $.say($.whisperPrefix(sender) + $.adminMsg);
-                return;
-            }
-
             if (!cmd) {
                 $.say($.whisperPrefix(sender) + $.lang.get('cooldown.global.usage'));
                 return;
             }
-
+            clearAll();
             $.inidb.set('cooldown', 'globalCooldownTime', parseInt(cmd));
             $.say($.whisperPrefix(sender) + $.lang.get('cooldown.global.set', cmd));
         }
 
         /**
-         * @commandpath togglemodcooldown - Enable/Disable mods being affected by cooldowns
+         * @commandpath togglemodcooldown - Enable or Disable mods being affected by cooldowns
          */
         if (command.equalsIgnoreCase('togglemodcooldown')) {
-            if (!$.isAdmin(sender)) {
-                $.say($.whisperPrefix(sender) + $.adminMsg);
-                return;
-            }
-
             modCooldown = !modCooldown;
             $.setIniDbBoolean('cooldown', 'modCooldown', modCooldown);
             $.say($.whisperPrefix(sender) + $.lang.get('cooldown.set.togglemodcooldown', (modCooldown ? $.lang.get('common.enabled') : $.lang.get('common.disabled'))));
@@ -267,9 +264,11 @@
             $.registerChatCommand('./core/commandCoolDown.js', 'reloadcooldown', 1);
         }
     });
+    
     /** EXPORT TO $. API*/
     $.coolDown = {
         set: set,
         get: get,
+        clear: clear,
     };
 })();

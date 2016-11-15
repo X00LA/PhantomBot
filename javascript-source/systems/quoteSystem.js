@@ -4,6 +4,9 @@
  * Have the bot remember the most epic/derpy oneliners
  */
 (function() {
+	
+	var quoteMode = $.getSetIniDbBoolean('settings', 'quoteMode', true);
+
 
     /**
      * @function updateQuote
@@ -119,46 +122,69 @@
                 $.say($.whisperPrefix(sender) + $.lang.get('quotesystem.edit.404'));
             }
 
-            $.log.event(sender + ' edited quote #' + quote + '.');
+            $.log.event(sender + ' edited quote #' + quote);
         }
+		
+		/**
+		 * @commandpath quotemodetoggle - toggle between !addquote function modes
+		 */
+		if (command.equalsIgnoreCase('quotemodetoggle')) {
+			if (quoteMode) {
+				quoteMode = false;
+				$.inidb.set('settings', 'quoteMode', 'false');
+				$.say($.whisperPrefix(sender) + $.lang.get('quotesystem.add.usage2'));
+				return;
+			} else {
+				quoteMode = true;
+				$.inidb.set('settings', 'quoteMode', 'true');
+				$.say($.whisperPrefix(sender) + $.lang.get('quotesystem.add.usage1'));
+				return;
+			}
+		}
 
         /**
          * @commandpath addquote [quote text] - Save a quote
          */
         if (command.equalsIgnoreCase('addquote')) {
-            if (!$.isModv3(sender, event.getTags())) {
-                $.say($.whisperPrefix(sender) + $.modMsg);
-                return;
-            }
-            
-            if (args.length < 1) {
-                $.say($.whisperPrefix(sender) + $.lang.get('quotesystem.add.usage'));
-                return;
-            }
-
-            quote = args.splice(0).join(' ');
-            $.say($.lang.get('quotesystem.add.success', $.username.resolve(sender), saveQuote(String($.username.resolve(sender)), quote)));
-            $.log.event(sender + ' added a quote "' + quote + '".');
-        }
+			if (quoteMode) {
+			    if (args.length < 1) {
+					$.say($.whisperPrefix(sender) + $.lang.get('quotesystem.add.usage1'));
+					return;
+				}
+				quote = args.splice(0).join(' ');
+				$.say($.lang.get('quotesystem.add.success', $.username.resolve(sender), saveQuote(String($.username.resolve(sender)), quote)));
+				$.log.event(sender + ' added a quote "' + quote + '".');
+				return;
+			} else {
+				if (args.length < 2) {
+					$.say($.whisperPrefix(sender) + $.lang.get('quotesystem.add.usage2'));
+					return;
+				}
+				var target = args[0].toLowerCase();
+				if (!$.user.isKnown(target)) {
+					$.say($.whisperPrefix(sender) + $.lang.get('common.user.404', target));
+					return;
+				}
+				quote = args.splice(1).join(' ');
+				$.say($.lang.get('quotesystem.add.success', $.username.resolve(sender), saveQuote(String($.username.resolve(target)), quote)));
+				$.log.event(sender + ' added a quote "' + quote + '".');
+				return;
+			}
+		}
 
         /**
          * USED BY THE PANEL
          */
         if (command.equalsIgnoreCase('addquotesilent')) {
-            if (!$.isModv3(sender, event.getTags())) {
-                $.say($.whisperPrefix(sender) + $.modMsg);
+            if (!$.isBot(sender)) {
                 return;
             }
-            
             if (args.length < 1) {
-                //$.say($.whisperPrefix(sender) + $.lang.get('quotesystem.add.usage'));
                 return;
             }
 
             quote = args.splice(0).join(' ');
             saveQuote(String($.username.resolve(sender)), quote);
-            //$.say($.lang.get('quotesystem.add.success', $.username.resolve(sender), saveQuote(String($.username.resolve(sender)), quote)));
-            //$.log.event(sender + ' added a quote "' + quote + '".');
         }
 
         /**
@@ -184,21 +210,16 @@
         /**
          * USED BY THE PANEL
          */
-        if (command.equalsIgnoreCase('delquote')) {
-            if (!args[0] || isNaN(args[0])) {
-                $.say($.whisperPrefix(sender) + $.lang.get('quotesystem.del.usage'));
+        if (command.equalsIgnoreCase('delquotesilent')) {
+            if (!$.isBot(sender)) {
                 return;
             }
 
             var newCount;
 
             if ((newCount = deleteQuote(args[0])) >= 0) {
-                //$.say($.whisperPrefix(sender) + $.lang.get('quotesystem.del.success', args[0], newCount));
             } else {
-                //$.say($.whisperPrefix(sender) + $.lang.get('quotesystem.del.404', args[0]));
             }
-
-            //$.log.event(sender + ' removed quote with id: ' + args[0]);
         }
 
         /**
@@ -240,6 +261,7 @@
      */
     $.bind('initReady', function() {
         if ($.bot.isModuleEnabled('./systems/quoteSystem.js')) {
+			$.registerChatCommand('./systems/quoteSystem.js', 'quotemodetoggle', 2);
             $.registerChatCommand('./systems/quoteSystem.js', 'addquote', 2);
             $.registerChatCommand('./systems/quoteSystem.js', 'addquotesilent', 1);
             $.registerChatCommand('./systems/quoteSystem.js', 'delquote', 2);

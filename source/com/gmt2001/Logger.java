@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,9 +40,11 @@ public class Logger implements Runnable {
 
     private FileOutputStream fosCore = null;
     private FileOutputStream fosError = null;
+    private FileOutputStream fosWarning = null;
     private FileOutputStream fosDebug = null;
     private PrintStream psCore = null;
     private PrintStream psError = null;
+    private PrintStream psWarning = null;
     private PrintStream psDebug = null;
     private String curLogTimestamp = "";
 
@@ -59,6 +61,9 @@ public class Logger implements Runnable {
         }
         if (!new File ("./logs/core-error").exists()) {
           new File ("./logs/core-error/").mkdirs();
+        }
+        if (!new File ("./logs/core-warnings").exists()) {
+          new File ("./logs/core-warnings/").mkdirs();
         }
         if (!new File ("./logs/core-debug").exists()) {
           new File ("./logs/core-debug/").mkdirs();
@@ -82,6 +87,10 @@ public class Logger implements Runnable {
                         this.psError.close();
                         this.psError = null;
                     }
+                    if (psWarning != null) {
+                        this.psWarning.close();
+                        this.psWarning = null;
+                    }
                     if (this.psDebug != null) {
                         this.psDebug.close();
                         this.psDebug = null;
@@ -100,7 +109,7 @@ public class Logger implements Runnable {
                                 this.fosCore = new FileOutputStream("./logs/core/" + timestamp + ".txt", true);
                                 this.psCore = new PrintStream(this.fosCore);
                             }
-                            this.psCore.println(">>" + i.s);
+                            this.psCore.println(i.s);
                             this.psCore.flush();
                             break;
 
@@ -109,7 +118,7 @@ public class Logger implements Runnable {
                                 this.fosCore = new FileOutputStream("./logs/core/" + timestamp + ".txt", true);
                                 this.psCore = new PrintStream(this.fosCore);
                             }
-                            this.psCore.println("<<" + i.s);
+                            this.psCore.println(i.s);
                             this.psCore.flush();
                             break;
 
@@ -131,12 +140,21 @@ public class Logger implements Runnable {
                             this.psDebug.flush();
                             break;
 
+                        case Warning:
+                            if (this.psWarning == null) {
+                                this.fosWarning = new FileOutputStream("./logs/core-warnings/" + timestamp + ".txt", true);
+                                this.psWarning = new PrintStream(this.fosWarning);
+                            }
+                            this.psWarning.println(i.s);
+                            this.psWarning.flush();
+                            break;
+
                         default:
                             if (this.psCore == null) {
                                 this.fosCore = new FileOutputStream("./logs/core/" + timestamp + ".txt", true);
                                 this.psCore = new PrintStream(this.fosCore);
                             } 
-                            this.psCore.println("??" + i.s);
+                            this.psCore.println(i.s);
                             this.psCore.flush();
                             break;
                         }
@@ -182,6 +200,7 @@ public class Logger implements Runnable {
         Input,
         Error,
         Debug,
+        Warning,
         
     }
 
@@ -207,7 +226,7 @@ public class Logger implements Runnable {
 
     public String logTimestamp() {
         SimpleDateFormat datefmt = new SimpleDateFormat("MM-dd-yyyy @ HH:mm:ss.SSS z");
-        datefmt.setTimeZone(TimeZone.getTimeZone(PhantomBot.instance().log_timezone));
+        datefmt.setTimeZone(TimeZone.getTimeZone(PhantomBot.timeZone));
         return datefmt.format(new Date());
     }
 

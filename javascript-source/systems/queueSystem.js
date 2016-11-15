@@ -34,11 +34,13 @@
 		}
 
 		queue.push({user: user, gamertag: gamertag});
+        $.inidb.set('queueList', user, 'true');
 		$.say($.whisperPrefix(user) + $.lang.get('queuesystem.added.queue'));
 	};
 
 	function clearQueue(user, notify) {
 		queue = [];
+        $.inidb.RemoveFile('queueList');
 		if (notify) {
 		    $.say($.whisperPrefix(user) + $.lang.get('queuesystem.queue.cleared'));
 		}
@@ -74,7 +76,6 @@
 		return temp.join(', ');
 	};
 
-
     /**
      * @event command
      */
@@ -94,11 +95,6 @@
         }
 
         if (command.equalsIgnoreCase('queue')) {
-        	if (!$.isModv3(sender, event.getTags())) {
-        		$.say($.whisperPrefix(sender) + $.modMsg);
-        		return;
-        	}
-
         	if (!action) {
         		$.say($.whisperPrefix(sender) + $.lang.get('queuesystem.queue.usage'));
         		return;

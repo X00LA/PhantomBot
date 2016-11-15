@@ -21,6 +21,32 @@
         counts: [],
     };
 
+    /** 
+     * @function hasKey
+     * @param {Array} list
+     * @param {*} value
+     * @param {Number} [subIndex]
+     * @returns {boolean}
+     */
+    function hasKey(list, value, subIndex) {
+        var i;
+
+        if (subIndex > -1) {
+            for (i in list) {
+                if (list[i][subIndex].equalsIgnoreCase(value)) {
+                    return true;
+                }
+            }
+        } else {
+            for (i in list) {
+                if (list[i].equalsIgnoreCase(value)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
     // Compile regular expressions.
     var rePollOpenFourOptions = new RegExp(/"([\w\W]+)"\s+"([\w\W]+)"\s+(\d+)\s+(\d+)/),
         rePollOpenThreeOptions = new RegExp(/"([\w\W]+)"\s+"([\w\W]+)"\s+(\d+)/),
@@ -63,7 +89,7 @@
 
         $.say($.lang.get('pollsystem.poll.started', $.resolveRank(pollMaster), time, poll.minVotes, poll.question, optionsStr));
         if (poll.time) {
-            setTimeout(function() { endPoll(); }, poll.time, 'pollSystem');
+            var timeout = setTimeout(function() { endPoll(); }, poll.time);
         }
 
         return true;
@@ -81,7 +107,7 @@
             $.say($.whisperPrefix(sender) + $.lang.get('pollsystem.vote.nopoll'));
         }
 
-        if ($.list.contains(poll.voters, sender.toLowerCase())) {
+        if (hasKey(poll.voters, sender.toLowerCase())) {
             $.say($.whisperPrefix(sender) + $.lang.get('pollsystem.vote.already'));
             return;
         }
@@ -110,7 +136,7 @@
             return;
         }
 
-        clearTimeout(lookupTimeoutID('pollSystem'));
+        clearTimeout(timeout);
 
         if (poll.minVotes > 0 && poll.votes.length < poll.minVotes) {
             poll.result = '';
@@ -275,7 +301,7 @@
      */
     $.bind('initReady', function() {
         if ($.bot.isModuleEnabled('./systems/pollSystem.js')) {
-            $.registerChatCommand('./systems/pollSystem.js', 'poll', 7);
+            $.registerChatCommand('./systems/pollSystem.js', 'poll', 2);
             $.registerChatCommand('./systems/pollSystem.js', 'vote', 7);
         }
     });

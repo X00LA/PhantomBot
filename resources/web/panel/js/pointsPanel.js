@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 (function() {
 
     var sortType = 'alpha_asc',
+        priceComMods = false,
         modeIcon = [];
         modeIcon['false'] = "<i style=\"color: #6136b1\" class=\"fa fa-circle-o\" />";
         modeIcon['true'] = "<i style=\"color: #6136b1\" class=\"fa fa-circle\" />";
@@ -46,6 +47,9 @@
         }
 
         if (panelHasQuery(msgObject)) {
+            if (panelCheckQuery(msgObject, 'points_toplist')) {
+                $("#topListAmountPoints").attr("placeholder", msgObject['results']['topListAmountPoints']).blur();
+            }
             if (panelCheckQuery(msgObject, 'points_settings')) {
                 for (idx in msgObject['results']) {
                     var key = "",
@@ -55,17 +59,17 @@
                     value = msgObject['results'][idx]['value'];
     
                     if (panelMatch(key, 'onlineGain')) {
-                        $("#setPointGainInput_setgain").attr("placeholder", value).blur();
+                        $("#setPointGainInput_setgain").val(value);
                     } else if (panelMatch(key, 'offlineGain')) {
-                        $("#setPointGainInput_setofflinegain").attr("placeholder", value).blur();
+                        $("#setPointGainInput_setofflinegain").val(value);
                     } else if (panelMatch(key, 'onlinePayoutInterval')) {
-                        $("#setPointGainInput_setinterval").attr("placeholder", value).blur();
+                        $("#setPointGainInput_setinterval").val(value);
                     } else if (panelMatch(key, 'offlinePayoutInterval')) {
-                        $("#setPointGainInput_setofflineinterval").attr("placeholder", value).blur();
+                        $("#setPointGainInput_setofflineinterval").val(value);
                     } else if (panelMatch(key, 'pointNameSingle')) {
-                        $("#setPointNameInput").attr("placeholder", value).blur();
+                        $("#setPointNameInput").val(value);
                     } else if (panelMatch(key, 'pointNameMultiple')) {
-                        $("#setPointsNameInput").attr("placeholder", value).blur();
+                        $("#setPointsNameInput").val(value);
                     }
                 }
             }
@@ -77,35 +81,44 @@
                     timeValue = "",
                     html = "";
 
-                if (panelMatch(sortType, 'points_asc')) {
-                    pointsTableData.sort(sortPointsTable_points_asc);
-                } else if (panelMatch(sortType, 'points_desc')) {
-                    pointsTableData.sort(sortPointsTable_points_desc);
-                } else if (panelMatch(sortType, 'alpha_asc')) {
-                    pointsTableData.sort(sortPointsTable_alpha_asc);
-                } else if (panelMatch(sortType, 'alpha_desc')) {
-                    pointsTableData.sort(sortPointsTable_alpha_desc);
-                }
+                $("#userPtsTableTitle").html("User Points Table (Refreshing <i class='fa fa-spinner fa-spin' aria-hidden='true'></i>)");
+
+                pointsTableData.sort(sortPointsTable_alpha_asc);
                 
-                html = "<table>";
+                html = "<table class='table' data-paging='true' data-paging-size='8'" +
+                       "       data-filtering='true' data-filter-delay='200'" +
+                       "       data-sorting='true'" +
+                       "       data-paging-count-format='Rows {PF}-{PL} / {TR}' data-show-header='true'>";
+                html += "<thead><tr>" +
+                        "    <th data-breakpoints='xs'>Username</th>" +
+                        "    <th data-filterable='false' data-type='number'>Points</th>" +
+                        "</tr></thead><tbody>";
+
                 for (var idx = 0; idx < pointsTableData.length; idx++) {
                     username = pointsTableData[idx]['key'];
                     points = pointsTableData[idx]['value'];
-                    html += "<tr class=\"textList\">" +
-                            "    <td style=\"vertical-align: middle; width: 50%\">" + username + "</td>" +
-                            "    <td style=\"vertical-align: middle; width: 25%\">" + points + "</td>" +
-                            "    <td style=\"vertical-align: middle: width: 25%\">" +
-                            "    <form onkeypress=\"return event.keyCode != 13\">" +
-                            "        <input type=\"number\" min=\"0\" id=\"inlineUserPoints_" + username + "\"" +
-                            "               placeholder=\"" + points + "\" value=\"" + points + "\"" +
-                            "               style=\"width: 8em\"/>" +
-                            "        <button type=\"button\" class=\"btn btn-default btn-xs\" onclick=\"$.updateUserPoints('" + username + "')\"><i class=\"fa fa-pencil\" /></button>" +
-                            "    </form>" +
+                    html += "<tr onclick='$.copyUserPoints(\""+username+"\", \""+points+"\")' class='textList'>" +
+                            "    <td style='width: 50%'>" + username + "</td>" +
+                            "    <td style='width: 50%'>" + points + "</td>" +
                             "</tr>";
                 }
-                html += "</table>";
-                $("#userPointsTable").html(html);
+                html += "</tbody></table>";
+                setTimeout(function () {
+                    $("#userPointsTable").html(html);
+                    $('.table').footable({
+                        'on': { 'postdraw.ft.table': function(e, ft) { $("#userPtsTableTitle").html("User Points Table"); } }
+                    });
+                }, 500);
                 handleInputFocus();
+            }
+
+            if (panelCheckQuery(msgObject, 'points_pricecommods')) {
+                var value = msgObject['results']['pricecomMods'];
+                if (value == null || value == undefined) {
+                    value = "false";
+                }
+                priceComMods = value;
+                $("#priceComMods").html(modeIcon[value]);
             }
 
             if (panelCheckQuery(msgObject, 'points_grouppoints')) {
@@ -196,26 +209,30 @@
     function doQuery() {
         sendDBKeys("points_settings", "pointSettings");
         sendDBKeys("points_pointstable", "points");
+        sendDBQuery("points_toplist", "settings", "topListAmountPoints");
         sendDBKeys("points_grouppoints", "grouppoints");
+        sendDBQuery("points_pricecommods", "settings", "pricecomMods");
         sendDBKeys("points_grouppointsoffline", "grouppointsoffline");
-    }
+    };
+
+    /**
+     * @function doLiteQuery
+     */
+    function doLiteQuery() {
+        sendDBKeys("points_settings", "pointSettings");
+        sendDBQuery("points_toplist", "settings", "topListAmountPoints");
+        sendDBKeys("points_grouppoints", "grouppoints");
+        sendDBQuery("points_pricecommods", "settings", "pricecomMods");
+        sendDBKeys("points_grouppointsoffline", "grouppointsoffline");
+    };
 
     /**
      * @function sortPointsTable
      * @param {Object} a
      * @param {Object} b
      */
-    function sortPointsTable_alpha_desc(a, b) {
-        return panelStrcmp(b.key, a.key);
-    }
     function sortPointsTable_alpha_asc(a, b) {
         return panelStrcmp(a.key, b.key);
-    }
-    function sortPointsTable_points_asc(a, b) {
-        return parseInt(a.value) - parseInt(b.value);
-    }
-    function sortPointsTable_points_desc(a, b) {
-        return parseInt(b.value) - parseInt(a.value);
     }
 
     /**
@@ -231,21 +248,19 @@
 
         if (points.length > 0) {
             sendDBUpdate("points_updateGroupPoints", dbtable, group, points);
-            setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+            setTimeout(function() { doLiteQuery(); }, TIMEOUT_WAIT_TIME);
+            setTimeout(function() { sendCommand('reloadpoints') }, TIMEOUT_WAIT_TIME);
         }
     }
 
     /**
-     * @function updateUserPoints
+     * @function copyUserPoints
      * @param {String} username
+     * @param {String} points
      */
-    function updateUserPoints(username) {
-        var points = $("#inlineUserPoints_" + username).val();
-        if (points.length > 0) {
-            $("#inlineUserPoints_" + username).val('');
-            sendDBUpdate("points_pointstableUpdate", "points", username, points);
-            setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
-        }
+    function copyUserPoints(username, points) {
+        $("#adjustUserPointsNameInput").val(username);
+        $("#adjustUserPointsInput").val(points);
     }
 
     /**
@@ -263,7 +278,7 @@
             sendDBUpdate("points_settings", "pointSettings", "pointNameMultiple", pluralName);
         }
 
-        setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+        setTimeout(function() { doLiteQuery(); }, TIMEOUT_WAIT_TIME);
         setTimeout(function() { sendCommand('reloadpoints') }, TIMEOUT_WAIT_TIME);
     }
 
@@ -273,7 +288,7 @@
     function clearPointName() {
         sendDBUpdate("points_settings", "pointSettings", "pointNameMultiple", "points");
         sendDBUpdate("points_settings", "pointSettings", "pointNameSingle", "point");
-        setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+        setTimeout(function() { doLiteQuery(); }, TIMEOUT_WAIT_TIME);
         setTimeout(function() { sendCommand('reloadpoints') }, TIMEOUT_WAIT_TIME);
     }
 
@@ -284,32 +299,31 @@
     function setPointGain(action) {
         var value = $("#setPointGainInput_" + action).val();
 
+        if (value.length <= 0) {
+            setTimeout(function() { $("#setPointGainInput_" + action).val(''); }, TIMEOUT_WAIT_TIME);
+            return;
+        }
+
         if (action == "setgain") {
-            if (action.length != 0) {
-                sendDBUpdate("points_settings", "pointSettings", "onlineGain", value);
-            }
+            sendDBUpdate("points_settings", "pointSettings", "onlineGain", value);
         }
 
         if (action == "setofflinegain") {
-            if (action.length != 0) {
-                sendDBUpdate("points_settings", "pointSettings", "offlineGain", value);
-            }
+            sendDBUpdate("points_settings", "pointSettings", "offlineGain", value);
         }
 
         if (action == "setinterval") {
-            if (action.length != 0) {
-                sendDBUpdate("points_settings", "pointSettings", "onlinePayoutInterval", value);
-            }
+            sendDBUpdate("points_settings", "pointSettings", "onlinePayoutInterval", value);
         }
 
         if (action == "setofflineinterval") {
-            if (action.length != 0) {
-                sendDBUpdate("points_settings", "pointSettings", "offlinePayoutInterval", value);
-            }
+            sendDBUpdate("points_settings", "pointSettings", "offlinePayoutInterval", value);
         }
-        setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+
+        setTimeout(function() { doLiteQuery(); }, TIMEOUT_WAIT_TIME);
+        setTimeout(function() { sendCommand('reloadpoints') }, TIMEOUT_WAIT_TIME);
     }
- 
+
     /**
      * @function modifyUserPoints
      * @param {String} action
@@ -338,6 +352,7 @@
         $("#adjustUserPointsNameInput").val('');
         $("#adjustUserPointsInput").val('');
         setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+        setTimeout(function() { sendCommand('reloadpoints') }, TIMEOUT_WAIT_TIME);
     }
 
     /**
@@ -355,8 +370,15 @@
             if (panelMatch(action, 'makeitrain')) {
                 command = "makeitrain " + points;
             }
+            if (panelMatch(action, 'bonus')) {
+                command = "pointsbonuspanel " + points;
+            }
+            if (panelMatch(action, 'take')) {
+                command = "pointstakeallpanel " + points;
+            }
             $("#giftChatPointsInput").val('');
             sendCommand(command);
+            setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME * 2);
         }
     }
 
@@ -379,13 +401,30 @@
     };
 
     /**
-     * @function setPointsSort
-     * @param {String} type
+     * @function topListPoints
      */
-    function setPointsSort(type) {
-        sortType = type;
-        doQuery();
-    }
+    function topListPoints() {
+        var val = $("#topListAmountPoints").val();
+        if (val.length != 0) {
+            sendDBUpdate("points_toplist", "settings", "topListAmountPoints", val);
+        }
+        setTimeout(function() { doLiteQuery(); }, TIMEOUT_WAIT_TIME);
+        setTimeout(function() { sendCommand('reloadtop'); }, TIMEOUT_WAIT_TIME);
+    };
+
+    /**
+     * @function toggleModPriceCom
+     */
+    function toggleModPriceCom() {
+        $("#priceComMods").html("<i style=\"color: #6136b1\" class=\"fa fa-spinner fa-spin\" />");
+        if (priceComMods == "true") {
+            sendDBUpdate("points_modprice", "settings", "pricecomMods", "false");
+        } else {
+            sendDBUpdate("points_modprice", "settings", "pricecomMods", "true");
+        }
+        sendCommand('reloadinit');
+        setTimeout(function() { doLiteQuery(); }, TIMEOUT_WAIT_TIME);
+    };
 
     // Import the HTML file for this panel.
     $("#pointsPanel").load("/panel/points.html");
@@ -406,7 +445,7 @@
         var active = $("#tabs").tabs("option", "active");
         if (active == 4 && isConnected && !isInputFocus()) {
             newPanelAlert('Refreshing Points Data', 'success', 1000);
-            doQuery();
+            doLiteQuery();
         }
     }, 3e4);
 
@@ -418,8 +457,10 @@
     $.clearPointName = clearPointName;
     $.setPointGain = setPointGain;
     $.giftChatPoints = giftChatPoints;
+    $.copyUserPoints = copyUserPoints;
     $.modifyUserPoints = modifyUserPoints;
-    $.updateUserPoints = updateUserPoints;
-    $.setPointsSort = setPointsSort;
     $.penaltyUser = penaltyUser;
+    $.topListPoints = topListPoints;
+    $.toggleModPriceCom = toggleModPriceCom;
+    $.setInterval = setInterval;
 })();

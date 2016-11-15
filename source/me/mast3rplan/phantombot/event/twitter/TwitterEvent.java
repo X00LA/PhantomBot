@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,25 +17,38 @@
 package me.mast3rplan.phantombot.event.twitter;
 
 import me.mast3rplan.phantombot.event.Event;
-import me.mast3rplan.phantombot.jerklib.Channel;
+import me.mast3rplan.phantombot.twitchwsirc.Channel;
 
 public class TwitterEvent extends Event {
 
     private final String tweet;
     private final Channel channel;
+    private final String mention;
 
     public TwitterEvent(String tweet) {
         this.tweet = tweet;
         this.channel = null;
+        this.mention = null;
     }
 
     public TwitterEvent(String tweet, Channel channel) {
         this.tweet = tweet;
         this.channel = channel;
+        this.mention = null;
+    }
+
+    public TwitterEvent(String tweet, Channel channel, String mention) {
+        this.tweet = tweet;
+        this.channel = channel;
+        this.mention = mention;
     }
 
     public String getTweet() {
         return tweet;
+    }
+
+    public String getMentionUser() {
+        return mention;
     }
 
     public Channel getChannel() {

@@ -10,6 +10,35 @@
         betOptions = [],
         betTable = [];
 
+    /** 
+     * @function hasKey
+     * @param {Array} list
+     * @param {*} value
+     * @param {Number} [subIndex]
+     * @returns {boolean}
+     */
+    function hasKey(list, value, subIndex) {
+        var i;
+
+        if (subIndex > -1) {
+            for (i in list) {
+                if (list[i][subIndex].equalsIgnoreCase(value)) {
+                    return true;
+                }
+            }
+        } else {
+            for (i in list) {
+                if (list[i].equalsIgnoreCase(value)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
+    /**
+    * @function betOpen
+    */
     function betOpen(event, bet, timer) {
         var sender = event.getSender(),
             args = event.getArgs(),
@@ -60,6 +89,9 @@
         $.log.event(sender + ' opened a bet with options: "' + string + '"');
     };
 
+    /**
+    * @function resetBet
+    */
     function resetBet() {
         betPot = 0;
         betTotal = 0;
@@ -67,8 +99,12 @@
         betOptions = [];
         betTable = [];
         betStatus = false;
+        betTimerStatus = false;
     }
 
+    /**
+    * @function betClose
+    */
     function betClose(sender, event, subAction) {
         var args = event.getArgs(),
             betWinning = subAction,
@@ -85,13 +121,13 @@
             return;
         }
 
-        if (!betWinning && !subAction.equalsIgnoreCase('refundall')) {
+        if (!subAction) {
             $.say($.whisperPrefix(sender) + $.lang.get('betsystem.err.win.option'));
             return;
         }
 
         if (subAction && subAction.equalsIgnoreCase('refundall')) {
-            betStatus = false;
+            betStatus = false;// Have this here in case it takes longer for the loop to end. 
             for (i in betTable) {
                 bet = betTable[i];
                 $.inidb.incr('points', i, bet.amount);
@@ -101,7 +137,7 @@
             return;
         }
 
-        if (!$.list.contains(betOptions, betWinning)) {
+        if (!hasKey(betOptions, betWinning)) {
             $.say($.whisperPrefix(sender) + $.lang.get('betsystem.err.option.404'));
             return;
         }
@@ -177,7 +213,7 @@
         $.inidb.set('betresults', 'winners', betWinners);
         $.inidb.set('betresults', 'amount', (betPot * betWinPercent));
 
-        $.say($.lang.get('betsystem.closed', betWinning, $.getPointsString(betPot * betWinPercent)));
+        $.say($.lang.get('betsystem.closed', betWinning, $.pointNameMultiple));
         resetBet();
         $.log.event(sender + ' closed a bet.');
     };
@@ -204,11 +240,6 @@
              * @commandpath bet open [option option option ...] - Opens a bet with options; not allowed to be digits, words only.
              */
             if (action.equalsIgnoreCase('open')) {
-                if (!$.isModv3(sender, event.getTags())) {
-                    $.say($.whisperPrefix(sender) + $.modMsg);
-                    return;
-                }
-
                 betOpen(event, bet, betTimer);
                 return;
 
@@ -217,10 +248,6 @@
                  * @commandpath bet close refundall - Closes the bet and refunds all points.
                  */
             } else if (action.equalsIgnoreCase('close')) {
-                if (!$.isModv3(sender, event.getTags())) {
-                    $.say($.whisperPrefix(sender) + $.modMsg);
-                    return;
-                }
                 betClose(sender, event, subAction);
                 return;
 
@@ -228,11 +255,6 @@
                  * @commandpath bet setminimum [value] - Set the minimum value of a bet.
                  */
             } else if (action.equalsIgnoreCase('setminimum')) {
-                if (!$.isModv3(sender, event.getTags())) {
-                    $.say($.whisperPrefix(sender) + $.modMsg);
-                    return;
-                }
-
                 if (!subAction) {
                     $.say($.whisperPrefix(sender) + $.lang.get('betsystem.set.min.usage'));
                     return;
@@ -241,18 +263,13 @@
                 betMinimum = parseInt(subAction);
                 $.inidb.set('betSettings', 'betMinimum', betMinimum);
                 $.say($.whisperPrefix(sender) + $.lang.get('betsystem.set.min', betMinimum, $.pointNameMultiple));
-                $.log.event(sender + ' set the bet minimum to ' + betMinimum + '.');
+                $.log.event(sender + ' set the bet minimum to ' + betMinimum);
                 return;
 
                 /**
                  * @commandpath bet setmaximum [value] - Set the maximum value of a bet.
                  */
             } else if (action.equalsIgnoreCase('setmaximum')) {
-                if (!$.isModv3(sender, event.getTags())) {
-                    $.say($.whisperPrefix(sender) + $.modMsg);
-                    return;
-                }
-
                 if (!subAction) {
                     $.say($.whisperPrefix(sender) + $.lang.get('betsystem.set.max.usage'));
                     return;
@@ -261,18 +278,13 @@
                 betMaximum = parseInt(subAction);
                 $.inidb.set('betSettings', 'betMaximum', betMaximum);
                 $.say($.whisperPrefix(sender) + $.lang.get('betsystem.set.max', betMaximum, $.pointNameMultiple));
-                $.log.event(sender + ' set the bet maximum to ' + betMaximum + '.');
+                $.log.event(sender + ' set the bet maximum to ' + betMaximum);
                 return;
 
                 /**
                  * @commandpath bet settimer [amount in seconds] - Sets a auto close timer for bets
                  */
             } else if (action.equalsIgnoreCase('settimer')) {
-                if (!$.isModv3(sender, event.getTags())) {
-                    $.say($.whisperPrefix(sender) + $.modMsg);
-                    return;
-                }
-
                 if (!subAction) {
                     $.say($.whisperPrefix(sender) + $.lang.get('betsystem.set.timer.usage'));
                     return;
@@ -288,21 +300,16 @@
                  * @commandpath togglebetmessage - Toggles the bet enter message
                  */
             } else if (action.equalsIgnoreCase('togglebetmessage')) {
-                if (!$.isModv3(sender, event.getTags())) {
-                    $.say($.whisperPrefix(sender) + $.modMsg);
-                    return;
-                }
-
                 if (betMessageToggle) {
                     betMessageToggle = false;
                     $.inidb.set('betSettings', 'betMessageToggle', false);
                     $.say($.whisperPrefix(sender) + $.lang.get('betsystem.toggle.off'));
-                    $.log.event(sender + ' disabled the bet messages.');
+                    $.log.event(sender + ' disabled the bet messages');
                 } else if (!betMessageToggle) {
                     betMessageToggle = true;
                     $.inidb.set('betSettings', 'betMessageToggle', true);
                     $.say($.whisperPrefix(sender) + $.lang.get('betsystem.toggle.on'));
-                    $.log.event(sender + ' enabled the bet messages.');
+                    $.log.event(sender + ' enabled the bet messages');
                 }
                 return;
 
@@ -336,7 +343,7 @@
                     betOption = subAction;
                 }
 
-                if (!$.list.contains(betOptions, betOption.toLowerCase())) {
+                if (!hasKey(betOptions, betOption.toLowerCase())) {
                     $.say($.whisperPrefix(sender) + $.lang.get('betsystem.err.option.404'));
                     return;
                 } else if (betWager < 1) {
@@ -383,6 +390,12 @@
     $.bind('initReady', function() {
         if ($.bot.isModuleEnabled('./systems/betSystem.js')) {
             $.registerChatCommand('./systems/betSystem.js', 'bet', 7);
+            $.registerChatSubcommand('bet', 'open', 2);
+            $.registerChatSubcommand('bet', 'close', 2);
+            $.registerChatSubcommand('bet', 'setmaximum', 2);
+            $.registerChatSubcommand('bet', 'setminimum', 2);
+            $.registerChatSubcommand('bet', 'settimer', 2);
+            $.registerChatSubcommand('bet', 'togglebetmessage', 2);
         }
     });
 })();

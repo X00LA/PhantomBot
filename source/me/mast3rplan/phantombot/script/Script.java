@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.mozilla.javascript.*;
+import org.mozilla.javascript.tools.debugger.Main;
 import me.mast3rplan.phantombot.PhantomBot;
 
 public class Script {
@@ -41,7 +42,7 @@ public class Script {
     @SuppressWarnings("CallToThreadStartDuringObjectConstruction")
     public Script(File file) {
 
-        if (PhantomBot.instance().reloadScripts) {
+        if (PhantomBot.reloadScripts) {
             this.fileWatcher = new ScriptFileWatcher(this);
         } else {
             if (file.getPath().indexOf("/lang/") != -1) {
@@ -52,7 +53,7 @@ public class Script {
         }
         this.file = file;
 
-        if (!file.getName().endsWith(".js")) {
+        if (!file.getName().endsWith(".js") || file.getName().startsWith(".")) {
             return;
         }
 
@@ -75,7 +76,8 @@ public class Script {
             if (file.getPath().endsWith("init.js")) {
                 com.gmt2001.Console.out.println("Reloaded module: init.js");
             } else {
-                com.gmt2001.Console.out.println("Reloaded module: " + file.getPath().replace("./scripts/./", ""));
+                String path = file.getPath().replace("\056\134", "").replace("\134", "/").replace("scripts/", "");
+                com.gmt2001.Console.out.println("Reloaded module: " + path);
             }
             fileNotFoundCount = 0;
         } catch (Exception ex) {
@@ -91,7 +93,8 @@ public class Script {
             if (file.getPath().endsWith("init.js")) {
                 com.gmt2001.Console.err.println("Failed to reload module: init.js: " + ex.getMessage());
             } else {
-                com.gmt2001.Console.err.println("Failed to reload module: " + file.getPath().replace("./scripts/./", "") + ": " + ex.getMessage());
+                String path = file.getPath().replace("\056\134", "").replace("\134", "/").replace("scripts/", "");
+                com.gmt2001.Console.err.println("Failed to reload module: " + path + ": " + ex.getMessage());
             }
         }
     }
@@ -119,14 +122,35 @@ public class Script {
         };
         RhinoException.setStackStyle(StackStyle.MOZILLA);
 
+        /* Create Debugger Instance - this opens for only init.js */
+        Main debugger = null;
+        if (PhantomBot.enableRhinoDebugger) {
+            if (file.getName().endsWith("init.js")) {
+                debugger = new Main(file.getName());
+                debugger.attachTo(ctxFactory);
+            }
+        }
+
         context = ctxFactory.enterContext();
-        context.setOptimizationLevel(9);
+        if (!PhantomBot.enableRhinoDebugger) {
+            context.setOptimizationLevel(9);
+        }
 
         ScriptableObject scope = context.initStandardObjects(global, false);
         scope.defineProperty("$", global, 0);
         scope.defineProperty("$api", ScriptApi.instance(), 0);
         scope.defineProperty("$script", this, 0);
         scope.defineProperty("$var", vars, 0);
+
+        /* Configure debugger. */
+        if (PhantomBot.enableRhinoDebugger) {
+            if (file.getName().endsWith("init.js")) {
+                debugger.setBreakOnEnter(false);
+                debugger.setScope(scope);
+                debugger.setSize(640, 480);
+                debugger.setVisible(true);
+            }
+        }
 
         try {
             context.evaluateString(scope, FileUtils.readFileToString(file), file.getName(), 1, null);

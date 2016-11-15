@@ -57,8 +57,13 @@ genTwitterTokens/classes/generatetwittertokens
 
 # IntelliJ Project files
 .idea
+*.iml
 
 # Netbeans Project files
 nbproject
 
 # Eclipse Project files
+.settings/
+.classpath
+.project
+

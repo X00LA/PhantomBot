@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,62 +31,9 @@
      * name is used by Ion.Sound to find files to play.
      * desc is used to generate the buttons for the audio panel.
      */
-    var sounds = [
-        { name: "beer_can_opening",	desc: "Beer Can Opening" },
-        { name: "bell_ring",		desc: "Bell Ring" },
-        { name: "branch_break",		desc: "Branch Break" },
-        { name: "button_click",		desc: "Button Click" },
-        { name: "button_click_on",	desc: "Button Click On" },
-        { name: "button_push",		desc: "Button Push" },
-        { name: "button_tiny",		desc: "Button Tiny" },
-        { name: "camera_flashing",	desc: "Camera Flashing" },
-        { name: "camera_flashing_2",	desc: "Camera Flashing 2" },
-        { name: "cd_tray",		desc: "CD Tray" },
-        { name: "computer_error",	desc: "Computer Error" },
-        { name: "door_bell",		desc: "Door Bell" },
-        { name: "door_bump",		desc: "Door Bump" },
-        { name: "glass",		desc: "Glass" },
-        { name: "keyboard_desk",	desc: "Keyboard Desk" },
-        { name: "light_bulb_breaking",	desc: "Light Bulb Breaking" },
-        { name: "metal_plate",		desc: "Metal Plate" },
-        { name: "metal_plate_2",	desc: "Metal Plate 2" },
-        { name: "pop_cork",		desc: "Pop Cork" },
-        { name: "snap",			desc: "Snap" },
-        { name: "staple_gun",		desc: "Staple Gun" },
-        { name: "tap",			desc: "Tap" },
-        { name: "water_droplet_2",	desc: "Water Droplet 2" },
-        { name: "water_droplet_3",	desc: "Water Droplet 3" },
-        { name: "water_droplet",	desc: "Water Droplet" },
-        { name: "sweetcrap",		desc: "Sweet Merciful Crap" },
-        { name: "badumtiss",		desc: "Ba-Dum-Tiss!" },
-        { name: "whaawhaa",		desc: "Whaa Whaa Whaa" },
-        { name: "nobodycares",		desc: "Nobody Cares" },
-        { name: "johncena",		desc: "John Cena" },
-        { name: "tutturuu",		desc: "Tutturuu" },
-        { name: "wilhelmscream",	desc: "Wilhelm Scream" },
-        { name: "airhorn",		desc: "Airhorn" },
-        { name: "crickets",		desc: "Crickets" },
-        { name: "drumroll",		desc: "Drum Roll" },
-        { name: "splat",		desc: "Splat" },
-        { name: "applause",		desc: "Applause" },
-        { name: "r2d2",			desc: "R2D2" },
-        { name: "yesyes",		desc: "M.Bison Yes Yes" },
-        { name: "goodgood",		desc: "Good Good" }
-    ];
-
-    // Configure the sound panel.
-    $(document).ready(function() {
-        ion.sound({
-            sounds: sounds,
-            path: "/panel/js/ion-sound/sounds/",
-            preload: true,
-            volume: 1.0,
-            ready_callback: ionSoundLoaded,
-            ended_callback: clearIonSoundPlaying 
-        });
-
-        sendAudioHooksToCore();
-    });
+    var announceInChat = false,
+        playlists = [],
+        sounds = [];
 
     /**
      * @function onMessage
@@ -120,6 +67,103 @@
         if (msgObject['audio_panel_hook'] !== undefined) {
             playIonSound(msgObject['audio_panel_hook']);
         }
+
+        if (panelCheckQuery(msgObject, 'audio_songblacklist')) {
+            if (msgObject['results'].length === 0) {
+                $('#ytplayerBSong').html('<i>There are no blacklisted songs.</i>');
+                return;
+            }
+            var html = '<table>';
+            for (var idx in msgObject['results']) {
+                 var name = msgObject['results'][idx]['key'];
+                html += '<tr style="textList">' +
+                        '    <td style="vertical-align: middle: width: 50%">' + name + '</td>' +
+                        '    <td style="width: 1%">' +
+                        '        <button type="button" class="btn btn-default btn-xs" id="deleteBSong_' + name + '" onclick="$.deleteBSong(\'' + name + '\')"><i class="fa fa-trash" /> </button>' +
+                        '    </td>' +
+                        '</tr>';
+            }
+            html += '</table>';
+            $('#ytplayerBSong').html(html);
+            handleInputFocus();
+        }
+
+        if (panelCheckQuery(msgObject, 'audio_hook')) {
+            var html = "<table>";
+            sounds.splice(0);
+
+            for (var idx in msgObject['results']) {
+
+                sounds.push({name: msgObject['results'][idx]['key'], desc: msgObject['results'][idx]['value']});
+
+                html += "<tr class=\"textList\">" +
+                    "    <td style=\"width: 5%\">" +
+                    "        <div id=\"deleteAudio_" + msgObject['results'][idx]['key'] + "\" type=\"button\" class=\"btn btn-default btn-xs\" " +
+                    "             onclick=\"$.deleteAudio('" + msgObject['results'][idx]['key'] + "')\"><i class=\"fa fa-trash\" />" +
+                    "        </div>" +
+                    "    </td>" +
+                    "    <td>" + msgObject['results'][idx]['value'] + "</td>" +
+                    "</tr>";
+            }
+            html += "</table>";
+            $('#audioHooks').html(html);
+            handleInputFocus();
+
+            setTimeout(function () {
+                $(document).ready(function() {
+                    ion.sound({
+                        sounds: sounds,
+                        path: "/panel/js/ion-sound/sounds/",
+                        preload: true,
+                        volume: 1.0,
+                        ready_callback: ionSoundLoaded,
+                        ended_callback: clearIonSoundPlaying 
+                    });
+                    sendAudioHooksToCore();
+                });
+            }, 2000);
+        }
+
+        if (panelCheckQuery(msgObject, 'audio_ytplaylists')) {
+            if (msgObject['results'].length === 0) {
+                return;
+            }
+
+            playlists.splice(0);
+
+            for (var idx in msgObject['results']) {
+                playlists.push(msgObject['results'][idx]['value']);
+            } 
+        }
+
+        if (panelCheckQuery(msgObject, 'audio_ytptoggle1')) {
+            if (msgObject['results']['announceInChat'] == "true") {
+                announceInChat = "true";
+            }
+            if (msgObject['results']['announceInChat'] == "false") {
+                announceInChat = "false";
+            }
+        }
+
+        if (panelCheckQuery(msgObject, 'audio_userblacklist')) {
+            if (msgObject['results'].length === 0) {
+                $('#ytplayerBUser').html('<i>There are no blacklisted users.</i>');
+                return;
+            }
+            html = '<table>';
+            for (var idx in msgObject['results']) {
+                 var name = msgObject['results'][idx]['key'];
+                html += '<tr style="textList">' +
+                        '    <td style="vertical-align: middle: width: 50%">' + name + '</td>' +
+                        '    <td style="width: 1%">' +
+                        '        <button type="button" class="btn btn-default btn-xs" id="deleteUser_' + name + '" onclick="$.deleteUser(\'' + name + '\')"><i class="fa fa-trash" /> </button>' +
+                        '    </td>' +
+                        '</tr>';
+            }
+            html += '</table>';
+            $('#ytplayerBUser').html(html);
+            handleInputFocus();
+        }
     }
 
     /**
@@ -137,8 +181,84 @@
     function doQuery(message) {
         sendDBQuery('audio_ytpMaxReqs', 'ytSettings', 'songRequestsMaxParallel');
         sendDBQuery('audio_ytpMaxLength', 'ytSettings', 'songRequestsMaxSecondsforVideo');
+        sendDBQuery('audio_ytptoggle1', 'ytSettings', 'announceInChat');
         sendDBQuery('audio_ytpDJName', 'ytSettings', 'playlistDJname');
+        sendDBKeys('audio_songblacklist', 'ytpBlacklistedSong');
+        sendDBKeys('audio_userblacklist', 'ytpBlacklist');
+        sendDBKeys('audio_ytplaylists', 'ytPanelPlaylist');
+        sendDBKeys('audio_hook', 'audio_hooks');
     }
+
+    /** 
+     * @function addSound
+     */
+    function addSound() {
+        var name = $('#soundImput').val();
+        var desc = $('#soundImputDesc').val();
+
+        if (name.length && desc.length != 0) {
+            sendDBUpdate('audio_hook_add', 'audio_hooks', name, desc);
+        }
+
+        $('#soundImput').val('');
+        $('#soundImputDesc').val('');
+        setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+    };
+
+    /** 
+     * @function addSound
+     */
+    function deleteAudio(audio) {
+        if (audio.length != 0) {
+            $("#deleteAudio_" + audio).html("<i style=\"color: #6136b1\" class=\"fa fa-spinner fa-spin\" />");
+            sendDBDelete('deleteAudio_' + audio, 'audio_hooks', audio);
+        }
+        setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME * 2);
+    };
+
+    /** 
+     * @function deleteBSong
+     * @param {String} song
+     */
+    function deleteBSong(song) {
+        $("#deleteBSong_" + song).html("<i style=\"color: #6136b1\" class=\"fa fa-spinner fa-spin\" />");
+        sendDBDelete("audio_bsong_" + song, "ytpBlacklistedSong", song);
+        setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+    };
+
+    /** 
+     * @function blacklistSong
+     */
+    function blacklistSong() {
+        var song = $("#songBlacklist").val();
+        if (song.length != 0) {
+            sendDBUpdate("audio_song_" + song, "ytpBlacklistedSong", song.toLowerCase(), 'true');
+            setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+        }
+        setTimeout(function() { $("#songBlacklist").val(''); }, TIMEOUT_WAIT_TIME);
+    };
+
+    /** 
+     * @function deleteUser
+     * @param {String} user
+     */
+    function deleteUser(user) {
+        $("#deleteBUser_" + user).html("<i style=\"color: #6136b1\" class=\"fa fa-spinner fa-spin\" />");
+        sendDBDelete("audio_user_" + user, "ytpBlacklist", user);
+        setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+    };
+
+    /** 
+     * @function blacklistUser
+     */
+    function blacklistUser() {
+        var user = $("#userBlacklist").val();
+        if (user.length != 0) {
+            sendDBUpdate("audio_user_" + user, "ytpBlacklist", user.toLowerCase(), 'true');
+            setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+        }
+        setTimeout(function() { $("#userBlacklist").val(''); }, TIMEOUT_WAIT_TIME);
+    };
 
     /**
      * @function loadAudioPanel
@@ -206,7 +326,12 @@
      * @function toggleYouTubePlayerNotify
      */
     function toggleYouTubePlayerNotify() {
-        sendCommand('ytp togglenotify');
+        if (announceInChat == "true") {
+            sendDBUpdate('audio_setting', 'ytSettings', 'announceInChat', "false");
+        } else {
+            sendDBUpdate('audio_setting', 'ytSettings', 'announceInChat', "true");
+        }
+        setTimeout(function() { doQuery(); sendCommand('reloadyt'); }, TIMEOUT_WAIT_TIME * 2);
     }
 
     /**
@@ -217,8 +342,7 @@
         if (value.length > 0) {
             $('#ytpDJNameInput').val('Updating...');
             sendDBUpdate('audio_setting', 'ytSettings', 'playlistDJname', value);
-            sendCommand('reloadyt');
-            setTimeout(function() { doQuery(); $('#ytpDJNameInput').val('') }, TIMEOUT_WAIT_TIME * 2);
+            setTimeout(function() { doQuery(); $('#ytpDJNameInput').val(''); sendCommand('reloadyt'); }, TIMEOUT_WAIT_TIME * 2);
         }
     }
 
@@ -251,18 +375,30 @@
     }
 
     /**
+     * @function loadYtplaylist
+     */
+    function loadYtplaylist() {
+        var value = $('#playlistImput').val();
+        if (value.length > 0) {
+            $('#playlistImput').val('Loading...');
+            sendCommand('playlist playlistloadpanel ' + value);
+            setTimeout(function() { doQuery(); $('#playlistImput').val(''); }, TIMEOUT_WAIT_TIME * 4);
+        }
+    }
+
+    /**
      * @function fillYouTubePlayerIframe
      */
     function fillYouTubePlayerIframe() {
         $('#youTubePlayerIframe').html('<iframe id="youTubePlayer" frameborder="0" scrolling="auto" height="400" width="680"'+
-                                       '        src="http://' + url[0] + ':' + (getPanelPort() + 1) + '/ytplayer?start_paused">');
+                                       '        src="' + getProtocol() + url[0] + ':' + (getPanelPort() + 1) + '/ytplayer?start_paused">');
     }
 
     /**
      * @function launchYouTubePlayer
      */
     function launchYouTubePlayer() {
-        window.open('http://' + url[0] + ':' + (getPanelPort() + 1) + '/ytplayer', 'PhantomBot YouTube Player',
+        window.open(getProtocol() + url[0] + ':' + (getPanelPort() + 1) + '/ytplayer', 'PhantomBot YouTube Player',
                     'menubar=no,resizeable=yes,scrollbars=yes,status=no,toolbar=no,height=700,width=900,location=no' );
     }
 
@@ -315,4 +451,12 @@
     $.setYouTubePlayerMaxLength = setYouTubePlayerMaxLength;
     $.fillYouTubePlayerIframe = fillYouTubePlayerIframe;
     $.launchYouTubePlayer = launchYouTubePlayer;
+    $.deleteBSong = deleteBSong;
+    $.blacklistSong = blacklistSong;
+    $.blacklistUser = blacklistUser;
+    $.deleteUser = deleteUser;
+    $.playlists = playlists;
+    $.loadYtplaylist = loadYtplaylist;
+    $.addSound = addSound;
+    $.deleteAudio = deleteAudio;
 })();

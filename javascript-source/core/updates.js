@@ -13,6 +13,7 @@
 (function() {
     var modules,
         versions,
+        sounds,
         i;
 
     /** New setup */
@@ -23,6 +24,7 @@
         './commands/topCommand.js',
         './commands/highlightCommand.js',
         './commands/deathctrCommand.js',
+        './commands/dualstreamCommand.js',
         './games/8ball.js',
         './games/adventureSystem.js',
         './games/killCommand.js',
@@ -39,6 +41,8 @@
         './handlers/gameWispHandler.js',
         './handlers/keywordHandler.js',
         './handlers/twitterHandler.js',
+        './handlers/streamTipHandler.js',
+        './handlers/discordHandler.js',
         './systems/cleanupSystem.js',
         './systems/greetingSystem.js',
         './systems/pointSystem.js',
@@ -56,20 +60,77 @@
         './systems/queueSystem.js',
         ];
 
+        sounds = [
+        { name: "beer_can_opening", desc: "Beer Can Opening" },
+        { name: "bell_ring",        desc: "Bell Ring" },
+        { name: "branch_break",     desc: "Branch Break" },
+        { name: "button_click",     desc: "Button Click" },
+        { name: "button_click_on",  desc: "Button Click On" },
+        { name: "button_push",      desc: "Button Push" },
+        { name: "button_tiny",      desc: "Button Tiny" },
+        { name: "camera_flashing",  desc: "Camera Flashing" },
+        { name: "camera_flashing_2",    desc: "Camera Flashing 2" },
+        { name: "cd_tray",      desc: "CD Tray" },
+        { name: "computer_error",   desc: "Computer Error" },
+        { name: "door_bell",        desc: "Door Bell" },
+        { name: "door_bump",        desc: "Door Bump" },
+        { name: "glass",        desc: "Glass" },
+        { name: "keyboard_desk",    desc: "Keyboard Desk" },
+        { name: "light_bulb_breaking",  desc: "Light Bulb Breaking" },
+        { name: "metal_plate",      desc: "Metal Plate" },
+        { name: "metal_plate_2",    desc: "Metal Plate 2" },
+        { name: "pop_cork",     desc: "Pop Cork" },
+        { name: "snap",         desc: "Snap" },
+        { name: "staple_gun",       desc: "Staple Gun" },
+        { name: "tap",          desc: "Tap" },
+        { name: "water_droplet_2",  desc: "Water Droplet 2" },
+        { name: "water_droplet_3",  desc: "Water Droplet 3" },
+        { name: "water_droplet",    desc: "Water Droplet" },
+        { name: "sweetcrap",        desc: "Sweet Merciful Crap" },
+        { name: "badumtiss",        desc: "Ba-Dum-Tiss!" },
+        { name: "whaawhaa",     desc: "Whaa Whaa Whaa" },
+        { name: "nobodycares",      desc: "Nobody Cares" },
+        { name: "johncena",     desc: "John Cena" },
+        { name: "tutturuu",     desc: "Tutturuu" },
+        { name: "wilhelmscream",    desc: "Wilhelm Scream" },
+        { name: "airhorn",      desc: "Airhorn" },
+        { name: "crickets",     desc: "Crickets" },
+        { name: "drumroll",     desc: "Drum Roll" },
+        { name: "splat",        desc: "Splat" },
+        { name: "applause",     desc: "Applause" },
+        { name: "r2d2",         desc: "R2D2" },
+        { name: "yesyes",       desc: "M.Bison Yes Yes" },
+        { name: "goodgood",     desc: "Good Good" },
+        ];
+
+        $.consoleLn('Setting up new audio hooks...');
+        for (i in sounds) {
+            $.inidb.set('audio_hooks', sounds[i].name, sounds[i].desc);
+        }
+
         $.consoleLn('Disabling default modules...');
         for (i in modules) {
             $.inidb.set('modules', modules[i], 'false');
         }
 
+        $.consoleLn('Adding new default custom commands...');
+        $.inidb.set('command', 'uptime', '(pointtouser) (channelname) has been online for (uptime)');
+        $.inidb.set('command', 'followage', '(followage)');
+        $.inidb.set('command', 'playtime', '(pointtouser) (channelname) has been playing (game) for (playtime)');
+        $.inidb.set('command', 'title', '(pointtouser) (titleinfo)');
+        $.inidb.set('command', 'game', '(pointtouser) (gameinfo)');
+        $.inidb.set('command', 'age', '(age)');
+
         $.consoleLn('Installing old updates...');
-        versions = ['installedv2', 'installedv2.0.5', 'installedv2.0.6', 'installedv2.0.7', 'installedv2.0.7.2', 'installedv2.0.8', 'installedv2.0.9', 'installedv2.1'];
+        versions = ['installedv2', 'installedv2.0.5', 'installedv2.0.6', 'installedv2.0.7', 'installedv2.0.7.2', 'installedv2.0.8', 'installedv2.0.9', 'installedv2.1.0', 'installedv2.1.1', 'installedv2.2.1', 'installedv2.3s', 'installedv2.3.3ss'];
         for (i in versions) {
             $.inidb.set('updates', versions[i], 'true');
         }
 
-        $.consoleLn('Initializing completed!');
-        modules = [];
-        versions = [];
+        $.consoleLn('Initializing complete!');
+        sounds = "";
+        modules = "";
+        versions = "";
         $.changed = false;
         $.inidb.set('updates', 'installedNewBot', 'true');
     }
@@ -81,7 +142,6 @@
             commandsBackup,
             timeBackup,
             pointsBackup,
-            i,
             defaultDisabledModules = [
                 './games/8ball.js',
                 './games/adventureSystem.js',
@@ -268,8 +328,8 @@
     }
 
     /** Version 2.1/2.0.10 updates */
-    if (!$.inidb.exists('updates', 'installedv2.1') || $.inidb.get('updates', 'installedv2.1') != 'true') {
-        $.consoleLn('Starting ' + $.version + ' updates...');
+    if (!$.inidb.exists('updates', 'installedv2.1.0') || $.inidb.get('updates', 'installedv2.1.0') != 'true') {
+        $.consoleLn('Starting PhantomBot version 2.1 updates...');
 
         $.consoleLn('Aliasing !permission to !group...');
         $.inidb.set('aliases', 'group', 'permission');
@@ -283,9 +343,176 @@
         $.consoleLn('Disabling new modules...');
         $.inidb.set('modules', './games/gambling.js', 'false');
 
-        $.consoleLn($.version + ' updates completed!');
-        $.inidb.set('updates', 'installedv2.1', 'true');
+        $.consoleLn('Setting up the new Twitter post delay...');
+        $.inidb.set('twitter', 'postdelay_update', 180);
+
+        sounds = [
+        { name: "beer_can_opening", desc: "Beer Can Opening" },
+        { name: "bell_ring",        desc: "Bell Ring" },
+        { name: "branch_break",     desc: "Branch Break" },
+        { name: "button_click",     desc: "Button Click" },
+        { name: "button_click_on",  desc: "Button Click On" },
+        { name: "button_push",      desc: "Button Push" },
+        { name: "button_tiny",      desc: "Button Tiny" },
+        { name: "camera_flashing",  desc: "Camera Flashing" },
+        { name: "camera_flashing_2",    desc: "Camera Flashing 2" },
+        { name: "cd_tray",      desc: "CD Tray" },
+        { name: "computer_error",   desc: "Computer Error" },
+        { name: "door_bell",        desc: "Door Bell" },
+        { name: "door_bump",        desc: "Door Bump" },
+        { name: "glass",        desc: "Glass" },
+        { name: "keyboard_desk",    desc: "Keyboard Desk" },
+        { name: "light_bulb_breaking",  desc: "Light Bulb Breaking" },
+        { name: "metal_plate",      desc: "Metal Plate" },
+        { name: "metal_plate_2",    desc: "Metal Plate 2" },
+        { name: "pop_cork",     desc: "Pop Cork" },
+        { name: "snap",         desc: "Snap" },
+        { name: "staple_gun",       desc: "Staple Gun" },
+        { name: "tap",          desc: "Tap" },
+        { name: "water_droplet_2",  desc: "Water Droplet 2" },
+        { name: "water_droplet_3",  desc: "Water Droplet 3" },
+        { name: "water_droplet",    desc: "Water Droplet" },
+        { name: "sweetcrap",        desc: "Sweet Merciful Crap" },
+        { name: "badumtiss",        desc: "Ba-Dum-Tiss!" },
+        { name: "whaawhaa",     desc: "Whaa Whaa Whaa" },
+        { name: "nobodycares",      desc: "Nobody Cares" },
+        { name: "johncena",     desc: "John Cena" },
+        { name: "tutturuu",     desc: "Tutturuu" },
+        { name: "wilhelmscream",    desc: "Wilhelm Scream" },
+        { name: "airhorn",      desc: "Airhorn" },
+        { name: "crickets",     desc: "Crickets" },
+        { name: "drumroll",     desc: "Drum Roll" },
+        { name: "splat",        desc: "Splat" },
+        { name: "applause",     desc: "Applause" },
+        { name: "r2d2",         desc: "R2D2" },
+        { name: "yesyes",       desc: "M.Bison Yes Yes" },
+        { name: "goodgood",     desc: "Good Good" },
+        ];
+
+        $.consoleLn('Setting up new audio hooks...');
+        for (i in sounds) {
+            $.inidb.set('audio_hooks', sounds[i].name, sounds[i].desc);
+        }
+        sounds = "";
+
+        $.consoleLn('PhantomBot v2.1 updates completed!');
+        $.inidb.set('updates', 'installedv2.1.0', 'true');
         $.inidb.set('updates', 'installedNewBot', 'true');//If bot login is deleted after updates were installed we don't want to reset the modules.
+    }
+
+    /** Version 2.2 updates */
+    if (!$.inidb.exists('updates', 'installedv2.1.1') || $.inidb.get('updates', 'installedv2.1.1') != 'true') {
+        $.consoleLn('Starting PhantomBot v2.2 updates...');
+
+        $.consoleLn('Disabling new modules...');
+        $.inidb.set('modules', './handlers/streamTipHandler.js', 'false');
+
+        $.consoleLn('PhantomBot v2.2 updates completed!');
+        $.inidb.set('updates', 'installedv2.1.1', 'true');
+    }
+
+    /** Version 2.3 updates */
+    if (!$.inidb.exists('updates', 'installedv2.3s') || $.inidb.get('updates', 'installedv2.3s') != 'true') {
+        $.consoleLn('Starting PhantomBot v2.3 updates...');
+
+        $.consoleLn('Disabling new modules...');
+        $.inidb.set('modules', './handlers/bitsHandler.js', 'false');
+        $.inidb.set('modules', './systems/autoHostSystem.js', 'false');
+
+        $.consoleLn('Setting up new default custom commands...');
+        if (!$.inidb.exists('command', 'uptime')) {
+            $.inidb.set('command', 'uptime', '(pointtouser) (channelname) has been online for (uptime)');
+        }
+        if (!$.inidb.exists('command', 'followage')) {
+            $.inidb.set('command', 'followage', '(followage)');
+        }
+        if (!$.inidb.exists('command', 'playtime')) {
+            $.inidb.set('command', 'playtime', '(pointtouser) (channelname) has been playing (game) for (playtime)');
+        }
+        if (!$.inidb.exists('command', 'title')) {
+            $.inidb.set('command', 'title', '(pointtouser) (titleinfo)');
+        }
+        if (!$.inidb.exists('command', 'game')) {
+            $.inidb.set('command', 'game', '(pointtouser) (gameinfo)');
+        }
+        if (!$.inidb.exists('command', 'age')) {
+            $.inidb.set('command', 'age', '(age)');
+        }
+        if ($.inidb.exists('permcom', 'game set')) {
+            $.inidb.set('permcom', 'setgame', $.inidb.get('permcom', 'game set'));
+        }
+        if ($.inidb.exists('permcom', 'title set')) {
+            $.inidb.set('permcom', 'settitle', $.inidb.get('permcom', 'title set'));
+        }
+
+        $.inidb.del('permcom', 'game set');
+        $.inidb.del('permcom', 'title set');
+
+        $.consoleLn('Updating auto hosting settings...');
+        if ($.inidb.exists('autohost_config', 'force') && $.inidb.get('autohost_config', 'force') == true) {
+            $.inidb.set('autohost_config', 'force', false);
+        }
+        if ($.inidb.exists('autohost_config', 'host_time_minutes') && $.inidb.get('autohost_config', 'host_time_minutes') < 30) {
+            $.inidb.set('autohost_config', 'host_time_minutes', 0);
+        }
+
+        $.consoleLn('Setting up new toggles...');
+        $.inidb.set('adventureSettings', 'warningMessage', true);
+        $.inidb.set('adventureSettings', 'enterMessage', true);
+
+        $.consoleLn('PhantomBot v2.3 updates completed!');
+        $.inidb.set('updates', 'installedv2.3s', 'true');
+    }
+
+    /* version 2.3.3s updates */
+    if (!$.inidb.exists('updates', 'installedv2.3.3ss') || $.inidb.get('updates', 'installedv2.3.3ss') != 'true') {
+        $.consoleLn('Starting ' + $.version + ' updates...');
+
+        $.consoleLn('Deleting the old emotes cache.');
+        $.inidb.RemoveFile('emotecache');
+
+        $.consoleLn('Updating raffle settings...');
+        if ($.inidb.exists('settings', 'raffleMSGToggle')) {
+            $.inidb.set('raffleSettings', 'raffleMSGToggle', $.inidb.get('settings', 'raffleMSGToggle'));
+            $.inidb.del('settings', 'raffleMSGToggle');
+        }
+
+        if ($.inidb.exists('settings', 'noRepickSame')) {
+            $.inidb.set('raffleSettings', 'noRepickSame', $.inidb.get('settings', 'noRepickSame'));
+            $.inidb.del('settings', 'noRepickSame');
+        }
+
+        if ($.inidb.exists('settings', 'raffleMessage')) {
+            $.inidb.set('raffleSettings', 'raffleMessage', $.inidb.get('settings', 'raffleMessage'));
+            $.inidb.del('settings', 'raffleMessage');
+        }
+
+        if ($.inidb.exists('settings', 'raffleMessageInterval')) {
+            $.inidb.set('raffleSettings', 'raffleMessageInterval', $.inidb.get('settings', 'raffleMessageInterval'));
+            $.inidb.del('settings', 'raffleMessageInterval');
+        }
+
+        if ($.inidb.exists('command', 'uptime') && $.inidb.get('command', 'uptime').equalsIgnoreCase('(@sender) (channelname) has been online for (uptime)')) {
+            $.inidb.set('command', 'uptime', '(pointtouser) (channelname) has been online for (uptime)');
+        }
+
+        if ($.inidb.exists('command', 'playtime') && $.inidb.get('command', 'playtime').equalsIgnoreCase('(@sender) (channelname) has been playing (game) for (playtime)')) {
+            $.inidb.set('command', 'playtime', '(pointtouser) (channelname) has been playing (game) for (playtime)');
+        }
+
+        if ($.inidb.exists('command', 'title') && $.inidb.get('command', 'title').equalsIgnoreCase('(@sender) (titleinfo)')) {
+            $.inidb.set('command', 'title', '(pointtouser) (titleinfo)');
+        }
+
+        if ($.inidb.exists('command', 'game') && $.inidb.get('command', 'game').equalsIgnoreCase('(@sender) (gameinfo)')) {
+            $.inidb.set('command', 'game', '(pointtouser) (gameinfo)');
+        }
+
+        // Disable the Discord Module by default. //
+        $.inidb.set('modules', './handlers/discordHandler.js', 'false');
+
+        $.consoleLn($.version + ' updates completed!');
+        $.inidb.set('updates', 'installedv2.3.3ss', 'true');
     }
 
     /**

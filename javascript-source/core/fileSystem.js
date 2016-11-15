@@ -8,7 +8,7 @@
         JFileInputStream = java.io.FileInputStream,
         JFileOutputStream = java.io.FileOutputStream;
 
-    var fileHandles = {};
+    var fileHandles = [];
 
     /**
      * @function readFile
@@ -26,7 +26,7 @@
             }
             fis.close();
         } catch (e) {
-            $.consoleLn('Failed to open \'' + path + '\': ' + e);
+            $.log.error('Failed to open \'' + path + '\': ' + e);
         }
         return lines;
     };
@@ -56,7 +56,7 @@
             try {
                 org.apache.commons.io.FileUtils.moveFileToDirectory(fileO, pathO, true);
             } catch (ex) {
-                $.logError("fileSystem.js", 57, "move File(" + file + ", " + path + ") failed: " + ex);
+                $.log.error("moveFile(" + file + ", " + path + ") failed: " + ex);
             }
         }
     };
@@ -78,7 +78,7 @@
             }
             fos.close();
         } catch (e) {
-            $.consoleLn('Failed to write to \'' + path + '\': ' + e);
+            $.log.error('Failed to write to \'' + path + '\': ' + e);
         }
     };
 
@@ -86,13 +86,13 @@
      * @function closeOpenFiles
      */
     function closeOpenFiles() {
-        for (key in fileHandles) {
-            if (fileHandles[key].lastWrite + 36e5 >= $.systemTime()) { 
+        for (var key in fileHandles) {
+            if (fileHandles[key].lastWrite + 36e5 <= $.systemTime()) { 
                 fileHandles[key].fos.close();
                 delete fileHandles[key];
             }
         }
-    }
+    };
 
     /**
      * @function writeToFile
@@ -107,9 +107,9 @@
 
         closeOpenFiles();
 
-        if (fileHandles.path !== undefined) {
-            fos = fileHandles.path.fos;
-            ps = fileHandles.path.ps;
+        if (fileHandles[path] !== undefined && append) {
+            fos = fileHandles[path].fos;
+            ps = fileHandles[path].ps;
             fileHandles[path].lastWrite = $.systemTime();
         } else {
             fos = new JFileOutputStream(path, append);
@@ -124,8 +124,9 @@
         try {
             ps.println(line);
             fos.flush();
+            ps.close();
         } catch (e) {
-            $.consoleLn('Failed to write to \'' + path + '\': ' + e);
+            $.log.error('Failed to write to \'' + path + '\': ' + e);
         }
     };
 
@@ -139,7 +140,7 @@
             var fos = new JFileOutputStream(path, true);
             fos.close();
         } catch (e) {
-            $.consoleLn('Failed to touch \'' + path + '\': ' + e);
+            $.log.error('Failed to touch \'' + path + '\': ' + e);
         }
     };
 
@@ -158,7 +159,7 @@
                 f.deleteOnExit();
             }
         } catch (e) {
-            $.consoleLn('Failed to delete \'' + path + '\': ' + e)
+            $.log.error('Failed to delete \'' + path + '\': ' + e);
         }
     };
 
@@ -198,7 +199,7 @@
                 return ret;
             }
         } catch (e) {
-            $.consoleLn('Failed to search in \'' + directory + '\': ' + e)
+            $.log.error('Failed to search in \'' + directory + '\': ' + e);
         }
         return [];
     };

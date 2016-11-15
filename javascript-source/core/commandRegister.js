@@ -9,7 +9,8 @@
  */
 (function() {
     var commands = {},
-        commandScriptTable = {};
+        commandScriptTable = {},
+        aliases = [];
 
     /**
      * @function getCommandScript
@@ -18,7 +19,7 @@
      */
     function getCommandScript(command) {
         return commandScriptTable[command];
-    }
+    };
 
     /**
      * @function registerChatSubcommand
@@ -34,7 +35,7 @@
             groupId = $.getGroupIdByName(groupId);
         }
 
-        if (!$.commandExists(command)) {
+        if (!commandExists(command)) {
             return;
         }
 
@@ -52,7 +53,7 @@
         commands[command].subcommands[subcommand] = {
             groupId: groupId
         }
-    }
+    };
 
     /**
      * @function registerChatCommand
@@ -74,6 +75,24 @@
             return;
         }
 
+        if (groupId == 30) {
+            if ($.inidb.exists('permcom', command)) {
+                $.inidb.del('permcom', command);
+            }
+            commands[command] = {
+                groupId: groupId,
+                script: script,
+                subcommands: {}
+            };
+            commandScriptTable[command] = script;
+            return;
+        }
+
+        if ($.inidb.exists('disabledCommands', command)) {
+            $.inidb.set('tempDisabledCommandScript', command, script);
+            return;
+        }
+
         if ($.inidb.exists('permcom', command)) {
             var newGroupId = parseInt($.inidb.get('permcom', command));
             groupId = newGroupId;
@@ -91,6 +110,18 @@
     };
 
     /**
+     * @function registerChatAlias
+     * @export $
+     * @param {command} alias
+     */
+
+    function registerChatAlias(alias) {
+        if (aliases[alias] === undefined) {
+            aliases[alias] = true;
+        }
+    };
+
+    /**
      * @function unregisterChatCommand
      * @export $
      * @param {string} command
@@ -99,9 +130,28 @@
         if (commandExists(command)) {
             delete commands[command];
             delete commandScriptTable[command];
+            delete aliases[command];
         }
 
         $.inidb.del('permcom', command);
+        $.inidb.del('disabledCommands', command);
+    };
+
+    /**
+     * @function tempUnRegisterChatCommand
+     * @export $
+     * @param {string} command
+     */
+    function tempUnRegisterChatCommand(command) {
+        $.inidb.set('tempDisabledCommandScript', command, commands[command].script);
+        if (commandExists(command)) {
+            delete commands[command];
+            delete commandScriptTable[command];
+            delete aliases[command];
+        }
+
+        /** This is used for disablecom. */
+        //$.inidb.del('permcom', command);
     };
 
     /**
@@ -116,7 +166,7 @@
         }
 
         $.inidb.del('permcom', command + ' ' + subcommand);
-    }
+    };
 
     /**
      * @function commandExists
@@ -126,6 +176,15 @@
      */
     function commandExists(command) {
         return (commands[command] ? true : false);
+    };
+
+    /**
+     * @function aliasExists
+     * @export $
+     * @param {string} command
+     */
+    function aliasExists(alias) {
+        return aliases[alias];
     };
 
     /**
@@ -140,7 +199,7 @@
             return (commands[command].subcommands[subcommand] ? true : false);
         }
         return false;
-    }
+    };
 
     /**
      * @function getCommandGroup
@@ -158,7 +217,7 @@
 
 
     /**
-     * @function getCommandGroup
+     * @function getCommandGroupName
      * @export $
      * @param command
      * @returns {name}
@@ -168,7 +227,7 @@
 
         if (commandExists(command)) {
             if (commands[command].groupId == 0) {
-                group = "Caster";
+                group = 'Caster';
             } else if (commands[command].groupId == 1) {
                 group = 'Administrator';
             } else if (commands[command].groupId == 2) {
@@ -186,6 +245,7 @@
             }
             return group;
         }
+        return 'Viewer';
     };
 
     /**
@@ -215,11 +275,11 @@
      *
      */
     function getSubCommandGroupName(command, subcommand) {
-        var group = "";
+        var group = '';
 
         if (subCommandExists(command, subcommand)) {
            if (commands[command].subcommands[subcommand].groupId == 0) {
-                group = "Caster";
+                group = 'Caster';
             } else if (commands[command].subcommands[subcommand].groupId == 1) {
                 group = 'Administrator';
             } else if (commands[command].subcommands[subcommand].groupId == 2) {
@@ -237,8 +297,8 @@
             }
             return group;
         }
-    }
-
+        return 'Viewer';
+    };
 
     /**
      * @function updateCommandGroup
@@ -250,7 +310,7 @@
         if (commandExists(command)) {
             commands[command].groupId = groupId;
         }
-    }
+    };
 
     /**
      * @function updateSubcommandGroup
@@ -263,7 +323,7 @@
         if (subCommandExists(command, subcommand)) {
             commands[command].subcommands[subcommand].groupId = groupId;
         }
-    }
+    };
 
     /** Export functions to API */
     $.registerChatCommand = registerChatCommand;
@@ -279,4 +339,7 @@
     $.updateCommandGroup = updateCommandGroup;
     $.updateSubcommandGroup = updateSubcommandGroup;
     $.getCommandScript = getCommandScript;
+    $.aliasExists = aliasExists;
+    $.registerChatAlias = registerChatAlias;
+    $.tempUnRegisterChatCommand = tempUnRegisterChatCommand;
 })();

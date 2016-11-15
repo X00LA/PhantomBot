@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@ public class SqliteStore extends DataStore {
     private boolean journal = true;
     private Connection connection = null;
     private static final SqliteStore instance = new SqliteStore();
+    private int autoCommitCtr = 0;
 
     public static SqliteStore instance() {
         return instance;
@@ -105,7 +106,7 @@ public class SqliteStore extends DataStore {
                     }
                 }
 
-                connection = CreateConnection(dbname, cache_size, safe_write, journal);
+                connection = CreateConnection(dbname, cache_size, safe_write, journal, true);
             }
         } catch (IOException ex) {
             com.gmt2001.Console.err.printStackTrace(ex);
@@ -116,7 +117,7 @@ public class SqliteStore extends DataStore {
                };
     }
 
-    private static Connection CreateConnection(String dbname, int cache_size, boolean safe_write, boolean journal) {
+    private static Connection CreateConnection(String dbname, int cache_size, boolean safe_write, boolean journal, boolean autocommit) {
         Connection connection = null;
 
         try {
@@ -126,12 +127,23 @@ public class SqliteStore extends DataStore {
             config.setTempStore(SQLiteConfig.TempStore.MEMORY);
             config.setJournalMode(journal ? SQLiteConfig.JournalMode.TRUNCATE : SQLiteConfig.JournalMode.OFF);
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbname.replaceAll("\\\\", "/"), config.toProperties());
-            connection.setAutoCommit(true);
+            connection.setAutoCommit(autocommit);
         } catch (SQLException ex) {
             com.gmt2001.Console.err.printStackTrace(ex);
         }
 
         return connection;
+    }
+
+    public void CloseConnection() {
+        try {
+            if (connection != null) {
+                connection.close();
+                connection = null;
+            }
+        } catch (SQLException ex) {
+           com.gmt2001.Console.err.printStackTrace(ex);
+        }
     }
 
     @Override
@@ -152,7 +164,7 @@ public class SqliteStore extends DataStore {
     private void CheckConnection() {
         try {
             if (connection == null || connection.isClosed() || !connection.isValid(10)) {
-                connection = CreateConnection(dbname, cache_size, safe_write, journal);
+                connection = CreateConnection(dbname, cache_size, safe_write, journal, getAutoCommitCtr() == 0);
             }
         } catch (SQLException ex) {
             com.gmt2001.Console.err.printStackTrace(ex);
@@ -448,8 +460,9 @@ public class SqliteStore extends DataStore {
         fName = validateFname(fName);
         AddFile(fName);
 
+        setAutoCommit(false);
+
         try {
-            connection.setAutoCommit(false);
             try (PreparedStatement statement = connection.prepareStatement("REPLACE INTO phantombot_" + fName + " (value, section, variable) values(?, ?, ?);")) {
                 statement.setQueryTimeout(10);
                 for (int idx = 0; idx < keys.length; idx++) {
@@ -466,19 +479,13 @@ public class SqliteStore extends DataStore {
                 statement.executeBatch();
                 statement.clearBatch();
                 connection.commit();
-                connection.setAutoCommit(true);
             }
         } catch (SQLException ex) {
             com.gmt2001.Console.err.println(ex);
             com.gmt2001.Console.err.printStackTrace(ex);
         }
 
-        try {
-            connection.setAutoCommit(true);
-        } catch (SQLException ex) {
-            com.gmt2001.Console.err.println(ex);
-            com.gmt2001.Console.err.printStackTrace(ex);
-        }
+        setAutoCommit(true);
     }
 
     @Override
@@ -513,6 +520,27 @@ public class SqliteStore extends DataStore {
     }
 
     @Override
+    public void InsertString(String fName, String section, String key, String value) {
+        CheckConnection();
+
+        fName = validateFname(fName);
+
+        AddFile(fName);
+
+        try {
+            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO phantombot_" + fName + " values(?, ?, ?);")) {
+                statement.setQueryTimeout(10);
+                statement.setString(1, section);
+                statement.setString(2, key);
+                statement.setString(3, value);
+                statement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            com.gmt2001.Console.err.printStackTrace(ex);
+        }
+    }
+
+    @Override
     public void CreateIndexes() {
         CheckConnection();
         String[] tableNames = GetFileList();
@@ -527,4 +555,33 @@ public class SqliteStore extends DataStore {
         }
     }
 
+    @Override
+    public void setAutoCommit(boolean mode) {
+        CheckConnection();
+
+        try {
+            if (mode == true) {
+                decrAutoCommitCtr();
+                if (getAutoCommitCtr() == 0) {
+                    connection.commit();
+                    connection.setAutoCommit(mode);
+                }
+            } else {
+                incrAutoCommitCtr();
+                connection.setAutoCommit(mode);
+            }
+        } catch (SQLException ex) {
+            com.gmt2001.Console.debug.println("SQLite commit was attempted too early, will perform later.");
+        }
+    }
+
+    private synchronized void incrAutoCommitCtr() {
+        autoCommitCtr++;
+    }
+    private synchronized void decrAutoCommitCtr() {
+        autoCommitCtr--;
+    }
+    private synchronized int getAutoCommitCtr() {
+        return autoCommitCtr;
+    }
 }

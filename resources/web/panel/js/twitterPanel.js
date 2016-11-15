@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 www.phantombot.net
+ * Copyright (C) 2016 phantombot.tv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,7 +81,7 @@
                         case 'polldelay_hometimeline' :
                         case 'polldelay_usertimeline' :
                         case 'postdelay_update' :
-                            $('#' + setting + 'TweetInput').attr('placeholder', value).blur();
+                            $('#' + setting + 'TweetInput').val(value);
                             break;
                     }
 
@@ -177,6 +177,51 @@
      */
     function updateDataTwitter(dbKey) {
         var value = $('#' + dbKey + 'TweetInput').val();
+
+        if (dbKey == 'postdelay_update') {
+            if (value >= 180) {
+                sendDBUpdate('twitter_update', 'twitter', dbKey, value);
+                setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+            }
+            setTimeout(function() { $('#' + dbKey + 'TweetInput').val(''); }, TIMEOUT_WAIT_TIME);
+            return;
+        }
+
+        if (dbKey == 'polldelay_mentions') {
+            if (value >= 60) {
+                sendDBUpdate('twitter_update', 'twitter', dbKey, value);
+                setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+            }
+            setTimeout(function() { $('#' + dbKey + 'TweetInput').val(''); }, TIMEOUT_WAIT_TIME);
+            return;
+        }
+
+        if (dbKey == 'polldelay_retweets') {
+            if (value >= 60) {
+                sendDBUpdate('twitter_update', 'twitter', dbKey, value);
+                setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+            }
+            setTimeout(function() { $('#' + dbKey + 'TweetInput').val(''); }, TIMEOUT_WAIT_TIME);
+            return;
+        }
+
+        if (dbKey == 'polldelay_hometimeline') {
+            if (value >= 60) {
+                sendDBUpdate('twitter_update', 'twitter', dbKey, value);
+                setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+            }
+            setTimeout(function() { $('#' + dbKey + 'TweetInput').val(''); }, TIMEOUT_WAIT_TIME);
+            return;
+        }
+
+        if (dbKey == 'polldelay_usertimeline') {
+            if (value >= 15) {
+                sendDBUpdate('twitter_update', 'twitter', dbKey, value);
+                setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
+            }
+            setTimeout(function() { $('#' + dbKey + 'TweetInput').val(''); }, TIMEOUT_WAIT_TIME);
+            return;
+        }
         if (value.length > 0) {
             sendDBUpdate('twitter_update', 'twitter', dbKey, value);
             setTimeout(function() { doQuery(); }, TIMEOUT_WAIT_TIME);
