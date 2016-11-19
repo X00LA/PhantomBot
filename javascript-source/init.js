@@ -13,13 +13,20 @@
         modules = [],
         hooks = [],
         lastRecon = 0,
-        pricecomMods = ($.inidb.exists('settings', 'pricecomMods') ? $.inidb.get('settings', 'pricecomMods') : false),
-        coolDownMsgEnabled = ($.inidb.exists('settings', 'coolDownMsgEnabled') ? $.inidb.get('settings', 'coolDownMsgEnabled') : false),
-        permComMsgEnabled = ($.inidb.exists('settings', 'permComMsgEnabled') ? $.inidb.get('settings', 'permComMsgEnabled') : false);
+        pricecomMods = ($.inidb.exists('settings', 'pricecomMods') && $.inidb.get('settings', 'pricecomMods').equals('true') ? true : false),
+        coolDownMsgEnabled = ($.inidb.exists('settings', 'coolDownMsgEnabled') && $.inidb.get('settings', 'coolDownMsgEnabled').equals('true') ? true : false),
+        permComMsgEnabled = ($.inidb.exists('settings', 'permComMsgEnabled') && $.inidb.get('settings', 'permComMsgEnabled').equals('true') ? true : false);
 
     /* Make these null to start */
     $.session = null;
     $.channel = null;
+
+    /* Reloads the init vars */
+    function reloadInit() {
+        pricecomMods = ($.inidb.exists('settings', 'pricecomMods') && $.inidb.get('settings', 'pricecomMods').equals('true') ? true : false);
+        coolDownMsgEnabled = ($.inidb.exists('settings', 'coolDownMsgEnabled') && $.inidb.get('settings', 'coolDownMsgEnabled').equals('true') ? true : false);
+        permComMsgEnabled = ($.inidb.exists('settings', 'permComMsgEnabled') && $.inidb.get('settings', 'permComMsgEnabled').equals('true') ? true : false);
+    }
 
     /**
      * @class
@@ -927,6 +934,13 @@
         });
 
         /**
+         * @event api-twitchAutoHosted
+         */
+        $api.on($script, 'twitchAutoHosted', function(event) {
+            callHook('twitchAutoHosted', event, true);
+        });
+
+        /**
          * @event api-twitchUnhosted
          */
         $api.on($script, 'twitchUnhosted', function(event) {
@@ -1305,6 +1319,7 @@
     $.consoleDebug = consoleDebug;
     $.bind = addHook;
     $.unbind = removeHook;
+    $.reloadInit = reloadInit;
 
     $.bot = {
         loadScript: loadScript,

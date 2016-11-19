@@ -94,6 +94,9 @@ import me.mast3rplan.phantombot.event.gamewisp.GameWispAnniversaryEvent;
 import me.mast3rplan.phantombot.event.subscribers.NewReSubscriberEvent;
 import me.mast3rplan.phantombot.event.subscribers.NewSubscriberEvent;
 import me.mast3rplan.phantombot.event.bits.BitsEvent;
+import me.mast3rplan.phantombot.httpserver.HTTPServer;
+import me.mast3rplan.phantombot.httpserver.NEWHTTPServer;
+import me.mast3rplan.phantombot.httpserver.NEWHTTPSServer;
 import me.mast3rplan.phantombot.musicplayer.MusicWebSocketServer;
 import me.mast3rplan.phantombot.ytplayer.YTWebSocketServer;
 import me.mast3rplan.phantombot.script.Script;
@@ -108,6 +111,7 @@ import org.apache.commons.io.FileExistsException;
 import org.apache.commons.lang3.SystemUtils;
 
 import me.mast3rplan.phantombot.twitchwsirc.TwitchWSIRC;
+import me.mast3rplan.phantombot.twitchwsirc.TwitchWSHostIRC;
 import me.mast3rplan.phantombot.twitchwsirc.Channel;
 import me.mast3rplan.phantombot.twitchwsirc.Session;
 import java.net.URI;
@@ -182,7 +186,7 @@ public class PhantomBot implements Listener {
 
 	/** Caches */
 	private FollowersCache followersCache;
-	private ChannelHostCache hostCache;
+	private ChannelHostCache hostCache = null;
 	private SubscribersCache subscribersCache;
 	private ChannelUsersCache channelUsersCache;
 	private DonationsCache twitchAlertsCache;
@@ -228,7 +232,7 @@ public class PhantomBot implements Listener {
 	private static Boolean newSetup = false;
 	private Boolean devCommands = true;
 	private Boolean joined = false;
-
+        private TwitchWSHostIRC wsHostIRC;
 
     /** 
      * PhantomBot Instance.
@@ -519,6 +523,11 @@ public class PhantomBot implements Listener {
 		/** Start a channel instance to create a session, and then connect to WS-IRC @ Twitch. */
 		this.channel = Channel.instance(this.channelName, this.botName, this.oauth, EventBus.instance());
 
+                /** Start a host checking instance. */
+                if (this.apiOAuth.length() > 0 && checkModuleEnabled("./handlers/hostHandler.js")) {
+                    this.wsHostIRC = TwitchWSHostIRC.instance(this.channelName, this.apiOAuth, EventBus.instance());
+                }
+
 		/** Check if the OS is Linux. */
 		if (SystemUtils.IS_OS_LINUX && !interactive) {
 			try {
@@ -686,6 +695,28 @@ public class PhantomBot implements Listener {
     }
 
     /**
+     * Returns if Twitch WS-IRC Host Detection is connected.
+     */
+    public boolean wsHostIRCConnected() {
+        return this.wsHostIRC.isConnected();
+    }
+
+    /**
+     * Helper method to see if a module is enabled.
+     */
+    public boolean checkModuleEnabled(String module) {
+        try {
+            if (dataStore.GetString("modules", "", module).equals("true")) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (NullPointerException ex) {
+            return false;
+        }
+    }
+
+    /**
 	 * Loads everything up.
 	 *
 	 */
@@ -740,15 +771,15 @@ public class PhantomBot implements Listener {
     	}
 
     	/** Enable gamewhisp if the oAuth is set */
-    	if (!gameWispOAuth.isEmpty() && dataStore.GetString("modules", "", "./handlers/gameWispHandler.js").equals("true")){
+        if (!gameWispOAuth.isEmpty() && checkModuleEnabled("./handlers/gameWispHandler.js")) {
     		/** Set the oAuths */
     		GameWispAPIv1.instance().SetAccessToken(gameWispOAuth);
-            GameWispAPIv1.instance().SetRefreshToken(gameWispRefresh);
-            SingularityAPI.instance().setAccessToken(gameWispOAuth);
-            SingularityAPI.instance().StartService();
-            /** get a fresh token */
-            doRefreshGameWispToken();
-    	}
+                GameWispAPIv1.instance().SetRefreshToken(gameWispRefresh);
+                SingularityAPI.instance().setAccessToken(gameWispOAuth);
+                SingularityAPI.instance().StartService();
+                /** get a fresh token */
+                doRefreshGameWispToken();
+        }
 
     	/** Check to see if all the Twitter info needed is there */
     	if (!twitterUsername.isEmpty() && !twitterAccessToken.isEmpty() && !twitterConsumerToken.isEmpty() && !twitterConsumerSecret.isEmpty() && !twitterSecretToken.isEmpty()) {
@@ -1070,19 +1101,6 @@ public class PhantomBot implements Listener {
         Script.global.defineProperty("donations", this.twitchAlertsCache, 0);
         Script.global.defineProperty("streamtip", this.streamTipCache, 0);
         Script.global.defineProperty("emotes", this.emotesCache, 0);
-
-        /** Make all these to null because they are useless with multiple channels */
-        this.chanName = null;
-        this.session = null;
-        this.emotesCache = null;
-        this.followersCache = null;
-        this.hostCache = null;
-        this.subscribersCache = null;
-        this.twitchCache = null;
-        this.channelUsersCache = null;
-        this.twitchAlertsCache = null;
-        this.streamTipCache = null;
-        this.twitterCache = null;
     }
 
     /**
